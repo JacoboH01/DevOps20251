@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login con Tailwind y jQuery</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Font Awesome -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body class="bg-gray-900 min-h-screen flex items-center justify-center p-4">
+    <!-- Contenedor principal -->
+    <div class="bg-gray-800 rounded-xl shadow-2xl overflow-hidden w-full max-w-md">
+        <!-- Encabezado con degradado (estilo gamer/hardware) -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 p-6 text-center">
+            <h1 class="text-3xl font-bold text-white">PC<span class="text-yellow-400">HUB</span></h1>
+            <p class="text-gray-200 mt-2">Ingresa a tu cuenta</p>
+        </div>
+
+        <!-- Formulario de Login -->
+        <form id="loginForm" class="p-8 space-y-6">
+            <!-- Campo Email -->
+            <div class="space-y-2">
+                <label for="email" class="block text-sm font-medium text-gray-300">Correo Electrónico</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-envelope text-gray-400"></i>
+                    </div>
+                    <input 
+                        type="email" 
+                        id="email" 
+                        class="bg-gray-700 text-white w-full pl-10 pr-3 py-2 rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition"
+                        placeholder="tu@email.com"
+                        required
+                    >
+                </div>
+            </div>
+
+            <!-- Campo Contraseña -->
+            <div class="space-y-2">
+                <label for="password" class="block text-sm font-medium text-gray-300">Contraseña</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-lock text-gray-400"></i>
+                    </div>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        class="bg-gray-700 text-white w-full pl-10 pr-3 py-2 rounded-lg border border-gray-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500 outline-none transition"
+                        placeholder="••••••••"
+                        required
+                    >
+                </div>
+            </div>
+
+            <!-- Botón de Ingresar -->
+            <button
+                type="submit"
+                class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all shadow-lg"
+            >
+                Ingresar
+            </button>
+
+            <!-- Enlace a Registro -->
+            <div class="text-center text-gray-400 text-sm">
+                ¿No tienes cuenta? 
+                <a href="#" id="showRegisterForm" class="text-blue-400 hover:text-blue-300 underline">Regístrate</a>
+            </div>
+        </form>
+
+        <!-- Mensaje de error -->
+        <div id="error-message" class="px-8 pb-6 text-red-400 text-sm hidden bg-red-900/20 rounded-lg mx-4 mb-4 py-2"></div>
+
+        <!-- Formulario de Registro (inicialmente oculto) -->
+        <form id="registerForm" class="p-8 space-y-6 hidden">
+            <div class="space-y-2">
+                <label for="regEmail" class="block text-sm font-medium text-gray-300">Correo Electrónico</label>
+                <input 
+                    type="email" 
+                    id="regEmail" 
+                    class="bg-gray-700 text-white w-full px-4 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 outline-none"
+                    placeholder="nuevo@email.com"
+                    required
+                >
+            </div>
+            <div class="space-y-2">
+                <label for="regPassword" class="block text-sm font-medium text-gray-300">Contraseña</label>
+                <input 
+                    type="password" 
+                    id="regPassword" 
+                    class="bg-gray-700 text-white w-full px-4 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 outline-none"
+                    placeholder="••••••••"
+                    required
+                >
+            </div>
+            <div class="space-y-2">
+                <label for="regConfirm" class="block text-sm font-medium text-gray-300">Confirmar Contraseña</label>
+                <input 
+                    type="password" 
+                    id="regConfirm" 
+                    class="bg-gray-700 text-white w-full px-4 py-2 rounded-lg border border-gray-600 focus:border-green-500 focus:ring-2 focus:ring-green-500 outline-none"
+                    placeholder="••••••••"
+                    required
+                >
+            </div>
+            <button
+                type="submit"
+                class="w-full bg-gradient-to-r from-green-600 to-teal-600 text-white py-3 px-4 rounded-lg font-semibold hover:from-green-700 hover:to-teal-700 transition-all shadow-lg"
+            >
+                Registrarse
+            </button>
+            <div class="text-center text-gray-400 text-sm">
+                ¿Ya tienes cuenta? 
+                <a href="#" id="backToLogin" class="text-green-400 hover:text-green-300 underline">Inicia sesión</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        $(document).ready(function() {
+            // Mostrar el formulario de registro y ocultar el de login
+            $("#showRegisterForm").click(function(e) {
+                e.preventDefault();
+                $("#loginForm").addClass("hidden");
+                $("#registerForm").removeClass("hidden");
+            });
+
+            // Volver al formulario de login
+            $("#backToLogin").click(function(e) {
+                e.preventDefault();
+                $("#registerForm").addClass("hidden");
+                $("#loginForm").removeClass("hidden");
+            });
+
+            // Lógica de inicio de sesión
+            $("#loginForm").submit(function(e) {
+                e.preventDefault();
+                
+                // Credenciales de prueba
+                const testCredentials = {
+                    email: "admin@pchub.com",
+                    password: "gaming123"
+                };
+
+                const email = $("#email").val().trim();
+                const password = $("#password").val().trim();
+
+                if (email === testCredentials.email && password === testCredentials.password) {
+                    // Guardar datos de sesión
+                    localStorage.setItem('token', 'mock_token_' + Date.now());
+                    localStorage.setItem('user', JSON.stringify({
+                        id: 1,
+                        email: testCredentials.email
+                    }));
+                    
+                    // Redirigir a la tienda
+                    window.location.href = "tienda.html";
+                } else {
+                    // Mostrar mensaje de error
+                    $("#error-message")
+                        .text("⚠️ Credenciales incorrectas. Use: admin@pchub.com / gaming123")
+                        .removeClass("hidden")
+                        .hide()
+                        .fadeIn();
+                }
+            });
+
+            // Lógica de registro
+            $("#registerForm").submit(function(e) {
+                e.preventDefault();
+                const email = $("#regEmail").val();
+                const password = $("#regPassword").val();
+                const confirm = $("#regConfirm").val();
+
+                if (password !== confirm) {
+                    alert("Las contraseñas no coinciden.");
+                    return;
+                }
+
+                $.ajax({
+                    url: 'http://localhost:3000/api/auth/register',
+                    method: 'POST',
+                    data: { email, password },
+                    success: function(response) {
+                        alert("Cuenta registrada con éxito. Puedes iniciar sesión.");
+                        $("#registerForm").hide();
+                        $("#loginForm").fadeIn();
+                    },
+                    error: function(xhr) {
+                        alert(xhr.responseJSON?.error || "Error al registrar la cuenta");
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
