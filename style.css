@@ -1,0 +1,54 @@
+/* Fondo con gradiente animado */
+body {
+    background: linear-gradient(135deg, #0f172a, #1e293b);
+    background-size: 200% 200%;
+    animation: gradientShift 10s ease infinite;
+}
+
+/* Animación suave del fondo */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+}
+
+/* Tarjeta con efecto glass (vidrio esmerilado) */
+.glass-card {
+    background: rgba(30, 41, 59, 0.75); /* fondo semitransparente */
+    backdrop-filter: blur(12px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Input más estilizado */
+input:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.5); /* azul tailwind */
+    transition: box-shadow 0.3s ease;
+}
+
+/* Botón de ingresar con efecto pulsante */
+.login-btn {
+    animation: pulseBtn 1.5s infinite ease-in-out;
+}
+
+@keyframes pulseBtn {
+    0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    }
+    50% {
+        transform: scale(1.05);
+        box-shadow: 0 0 15px rgba(139, 92, 246, 0.7);
+    }
+}
+
+/* Mensaje de error animado */
+#error-message {
+    animation: fadeIn 0.4s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-5px); }
+    to { opacity: 1; transform: translateY(0); }
+}
