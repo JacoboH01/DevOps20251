@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - PC HUB</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-100">
+    <!-- Barra de navegación -->
+    <nav class="bg-gray-800 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">PC<span class="text-yellow-400">HUB</span> Admin</h1>
+            <div class="space-x-4">
+                <a href="tienda.html" class="hover:text-yellow-400">Ver Tienda</a>
+                <button id="logoutBtn" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Contenido principal -->
+    <div class="container mx-auto p-6">
+        <!-- Estadísticas -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500">Total Productos</h3>
+                <p class="text-3xl font-bold" id="totalProducts">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500">Stock Total</h3>
+                <p class="text-3xl font-bold" id="totalStock">0</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500">Valor Total</h3>
+                <p class="text-3xl font-bold" id="totalValue">$0</p>
+            </div>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <h3 class="text-gray-500">Categorías</h3>
+                <p class="text-3xl font-bold" id="totalCategories">0</p>
+            </div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="flex justify-between mb-6">
+            <button id="addProductBtn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                <i class="fas fa-plus"></i> Agregar Producto
+            </button>
+            <div class="space-x-4">
+                <button id="exportBtn" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700">
+                    <i class="fas fa-file-export"></i> Exportar
+                </button>
+                <button id="importBtn" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">
+                    <i class="fas fa-file-import"></i> Importar
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabla de productos -->
+        <div class="bg-white rounded-lg shadow overflow-hidden">
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Imagen</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nombre</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Categoría</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Precio</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="productsTableBody" class="bg-white divide-y divide-gray-200">
+                    <!-- Los productos se cargarán aquí dinámicamente -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal para agregar/editar producto -->
+    <div id="productModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center">
+        <div class="bg-white rounded-lg p-8 max-w-2xl w-full mx-4">
+            <h2 class="text-2xl font-bold mb-6" id="modalTitle">Agregar Nuevo Producto</h2>
+            <form id="productForm" class="space-y-4">
+                <input type="hidden" id="productId">
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Nombre</label>
+                        <input type="text" id="productName" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Categoría</label>
+                        <select id="productCategory" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                            <option value="procesadores">Procesadores</option>
+                            <option value="tarjetas-graficas">Tarjetas Gráficas</option>
+                            <option value="memoria-ram">Memoria RAM</option>
+                            <option value="almacenamiento">Almacenamiento</option>
+                            <option value="placas-madre">Placas Madre</option>
+                            <option value="fuentes-poder">Fuentes de Poder</option>
+                            <option value="refrigeracion">Refrigeración</option>
+                            <option value="gabinetes">Gabinetes</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Precio</label>
+                        <input type="number" id="productPrice" required step="0.01" min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Stock</label>
+                        <input type="number" id="productStock" required min="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Descripción</label>
+                    <textarea id="productDescription" required rows="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"></textarea>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Imagen</label>
+                    <input type="file" id="productImage" accept="image/*" class="mt-1 block w-full">
+                    <div id="imagePreview" class="mt-2 hidden">
+                        <img src="" alt="Vista previa" class="max-h-32">
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-4 mt-6">
+                    <button type="button" id="cancelBtn" class="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50">
+                        Cancelar
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
+                        Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        $(document).ready(function() {
+            // Verificar autenticación
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            // Cargar productos
+            function loadProducts() {
+                const products = JSON.parse(localStorage.getItem('products')) || [];
+                const tbody = $('#productsTableBody');
+                tbody.empty();
+
+                products.forEach(product => {
+                    tbody.append(`
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <img src="${product.image}" alt="${product.name}" class="h-12 w-12 object-cover rounded">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">${product.name}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${product.category}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">$${product.price}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">${product.stock}</td>
+                            <td class="px-6 py-4 whitespace-nowrap space-x-2">
+                                <button class="edit-product text-blue-600 hover:text-blue-800" data-id="${product.id}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="delete-product text-red-600 hover:text-red-800" data-id="${product.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `);
+                });
+
+                updateStats(products);
+            }
+
+            // Actualizar estadísticas
+            function updateStats(products) {
+                $('#totalProducts').text(products.length);
+                const totalStock = products.reduce((sum, p) => sum + parseInt(p.stock), 0);
+                $('#totalStock').text(totalStock);
+                const totalValue = products.reduce((sum, p) => sum + (parseFloat(p.price) * parseInt(p.stock)), 0);
+                $('#totalValue').text('$' + totalValue.toFixed(2));
+                const categories = new Set(products.map(p => p.category));
+                $('#totalCategories').text(categories.size);
+            }
+
+            // Mostrar modal
+            $('#addProductBtn').click(function() {
+                $('#modalTitle').text('Agregar Nuevo Producto');
+                $('#productForm')[0].reset();
+                $('#productId').val('');
+                $('#imagePreview').addClass('hidden');
+                $('#productModal').removeClass('hidden').addClass('flex');
+            });
+
+            // Cerrar modal
+            $('#cancelBtn').click(function() {
+                $('#productModal').removeClass('flex').addClass('hidden');
+            });
+
+            // Vista previa de imagen
+            $('#productImage').change(function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        $('#imagePreview img').attr('src', e.target.result);
+                        $('#imagePreview').removeClass('hidden');
+                    }
+                    reader.readAsDataURL(file);
+                }
+            });
+
+            // Guardar producto
+            $('#productForm').submit(function(e) {
+                e.preventDefault();
+                const products = JSON.parse(localStorage.getItem('products')) || [];
+                const productId = $('#productId').val();
+                const imageFile = $('#productImage')[0].files[0];
+
+                let imageUrl = '';
+                if (imageFile) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        imageUrl = e.target.result;
+                        saveProduct(products, productId, imageUrl);
+                    }
+                    reader.readAsDataURL(imageFile);
+                } else {
+                    saveProduct(products, productId, imageUrl);
+                }
+            });
+
+            function saveProduct(products, productId, imageUrl) {
+                const product = {
+                    id: productId || Date.now().toString(),
+                    name: $('#productName').val(),
+                    category: $('#productCategory').val(),
+                    price: parseFloat($('#productPrice').val()),
+                    stock: parseInt($('#productStock').val()),
+                    description: $('#productDescription').val(),
+                    image: imageUrl || $('#imagePreview img').attr('src') || 'https://via.placeholder.com/150'
+                };
+
+                if (productId) {
+                    const index = products.findIndex(p => p.id === productId);
+                    if (index !== -1) {
+                        products[index] = {...products[index], ...product};
+                    }
+                } else {
+                    products.push(product);
+                }
+
+                localStorage.setItem('products', JSON.stringify(products));
+                loadProducts();
+                $('#productModal').removeClass('flex').addClass('hidden');
+            }
+
+            // Editar producto
+            $(document).on('click', '.edit-product', function() {
+                const productId = $(this).data('id');
+                const products = JSON.parse(localStorage.getItem('products')) || [];
+                const product = products.find(p => p.id === productId);
+
+                if (product) {
+                    $('#modalTitle').text('Editar Producto');
+                    $('#productId').val(product.id);
+                    $('#productName').val(product.name);
+                    $('#productCategory').val(product.category);
+                    $('#productPrice').val(product.price);
+                    $('#productStock').val(product.stock);
+                    $('#productDescription').val(product.description);
+                    
+                    if (product.image) {
+                        $('#imagePreview img').attr('src', product.image);
+                        $('#imagePreview').removeClass('hidden');
+                    }
+
+                    $('#productModal').removeClass('hidden').addClass('flex');
+                }
+            });
+
+            // Eliminar producto
+            $(document).on('click', '.delete-product', function() {
+                if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+                    const productId = $(this).data('id');
+                    const products = JSON.parse(localStorage.getItem('products')) || [];
+                    const filteredProducts = products.filter(p => p.id !== productId);
+                    localStorage.setItem('products', JSON.stringify(filteredProducts));
+                    loadProducts();
+                }
+            });
+
+            // Cerrar sesión
+            $('#logoutBtn').click(function() {
+                localStorage.removeItem('token');
+                window.location.href = 'index.html';
+            });
+
+            // Exportar productos
+            $('#exportBtn').click(function() {
+                const products = JSON.parse(localStorage.getItem('products')) || [];
+                const dataStr = JSON.stringify(products, null, 2);
+                const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+                
+                const exportFileDefaultName = 'productos-pchub.json';
+                
+                const linkElement = document.createElement('a');
+                linkElement.setAttribute('href', dataUri);
+                linkElement.setAttribute('download', exportFileDefaultName);
+                linkElement.click();
+            });
+
+            // Importar productos
+            $('#importBtn').click(function() {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                
+                input.onchange = function(e) {
+                    const file = e.target.files[0];
+                    const reader = new FileReader();
+                    
+                    reader.onload = function(e) {
+                        try {
+                            const products = JSON.parse(e.target.result);
+                            localStorage.setItem('products', JSON.stringify(products));
+                            loadProducts();
+                            alert('Productos importados con éxito');
+                        } catch (error) {
+                            alert('Error al importar el archivo. Asegúrate de que sea un archivo JSON válido.');
+                        }
+                    };
+                    
+                    reader.readAsText(file);
+                };
+                
+                input.click();
+            });
+
+            // Cargar productos iniciales
+            loadProducts();
+        });
+    </script>
+</body>
+</html> 

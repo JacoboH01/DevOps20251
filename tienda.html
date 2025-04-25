@@ -13,27 +13,20 @@
 </head>
 <body class="bg-gray-900 min-h-screen">
     <!-- Barra de navegación -->
-    <nav class="bg-gray-800 shadow-lg fixed w-full top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <h1 class="text-2xl font-bold text-white">PC<span class="text-yellow-400">HUB</span></h1>
-                </div>
-                <div class="flex items-center space-x-6">
-                    <button class="text-gray-300 hover:text-white transition-colors">
-                        <i class="fas fa-search text-xl"></i>
-                    </button>
-                    <button id="cartButton" class="relative text-gray-300 hover:text-white transition-colors">
-                        <i class="fas fa-shopping-cart text-xl"></i>
-                        <span id="cartCount" class="absolute -top-2 -right-2 bg-blue-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">0</span>
-                    </button>
-                    <button id="userButton" class="text-gray-300 hover:text-white transition-colors">
-                        <i class="fas fa-user text-xl"></i>
-                    </button>
-                    <button id="logoutButton" class="text-gray-300 hover:text-white transition-colors">
-                        <i class="fas fa-sign-out-alt text-xl"></i>
-                    </button>
-                </div>
+    <nav class="bg-gray-800 text-white p-4">
+        <div class="container mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold">PC<span class="text-yellow-400">HUB</span></h1>
+            <div class="flex items-center space-x-4">
+                <a href="admin.html" class="hover:text-yellow-400">
+                    <i class="fas fa-cog"></i> Admin
+                </a>
+                <button id="cartBtn" class="hover:text-yellow-400">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span id="cartCount" class="bg-yellow-400 text-black px-2 py-1 rounded-full text-xs">0</span>
+                </button>
+                <button id="logoutBtn" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700">
+                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+                </button>
             </div>
         </div>
     </nav>
@@ -239,13 +232,13 @@
             }
 
             // Cerrar sesión
-            $('#logoutButton').click(function() {
+            $('#logoutBtn').click(function() {
                 localStorage.clear(); // Limpiar todo el localStorage
                 window.location.href = 'index.html';
             });
 
             // Abrir/cerrar carrito
-            $('#cartButton').click(function(e) {
+            $('#cartBtn').click(function(e) {
                 e.stopPropagation();
                 closeAllModals();
                 $('#cartModal').removeClass('hidden');
@@ -259,7 +252,7 @@
                     id: 1,
                     name: 'Intel Core i9-13900K',
                     price: 799.99,
-                    image: 'https://dlcdnwebimgs.asus.com/gain/F044E7EE-3BC3-4EE5-8F2A-85B9B615B8E5/w1000/h1000',
+                    image: 'images/cpu/Intel Core i9-13900K.jpg',
                     category: 'cpu',
                     description: '24 núcleos (8P + 16E) / 32 hilos, hasta 5.8GHz'
                 },
@@ -267,7 +260,7 @@
                     id: 2,
                     name: 'Intel Core i7-13700K',
                     price: 499.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/cpu/Intel Core i7-13700K.webp',
                     category: 'cpu',
                     description: '16 núcleos (8P + 8E) / 24 hilos, hasta 5.4GHz'
                 },
@@ -275,7 +268,7 @@
                     id: 3,
                     name: 'Intel Core i5-13600K',
                     price: 349.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/cpu/Intel Core i5-13600K.webp',
                     category: 'cpu',
                     description: '14 núcleos (6P + 8E) / 20 hilos, hasta 5.1GHz'
                 },
@@ -284,7 +277,7 @@
                     id: 4,
                     name: 'AMD Ryzen 9 7950X',
                     price: 699.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/cpu/AMD Ryzen 9 7950X.jpg',
                     category: 'cpu',
                     description: '16 núcleos / 32 hilos, hasta 5.7GHz'
                 },
@@ -292,7 +285,7 @@
                     id: 5,
                     name: 'AMD Ryzen 7 7800X3D',
                     price: 449.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/cpu/AMD Ryzen 7 7800X3D.jpg',
                     category: 'cpu',
                     description: '8 núcleos / 16 hilos, 3D V-Cache, hasta 5.0GHz'
                 },
@@ -300,7 +293,7 @@
                     id: 6,
                     name: 'AMD Ryzen 5 7600X',
                     price: 299.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/cpu/AMD Ryzen 5 7600X.jpg',
                     category: 'cpu',
                     description: '6 núcleos / 12 hilos, hasta 5.3GHz'
                 },
@@ -309,7 +302,7 @@
                     id: 7,
                     name: 'NVIDIA RTX 4090',
                     price: 1599.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/gpu/NVIDIA RTX 4090.jpg',
                     category: 'gpu',
                     description: '24GB GDDR6X, DLSS 3.0, 16384 CUDA Cores'
                 },
@@ -317,7 +310,7 @@
                     id: 8,
                     name: 'NVIDIA RTX 4080',
                     price: 1199.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/gpu/NVIDIA RTX 4080.jpg',
                     category: 'gpu',
                     description: '16GB GDDR6X, DLSS 3.0, 9728 CUDA Cores'
                 },
@@ -325,7 +318,7 @@
                     id: 9,
                     name: 'NVIDIA RTX 4070 Ti',
                     price: 799.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/gpu/NVIDIA RTX 4070 Ti.jpg',
                     category: 'gpu',
                     description: '12GB GDDR6X, DLSS 3.0, 7680 CUDA Cores'
                 },
@@ -334,7 +327,7 @@
                     id: 10,
                     name: 'AMD Radeon RX 7900 XTX',
                     price: 999.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/gpu/AMD Radeon RX 7900 XTX.jpg',
                     category: 'gpu',
                     description: '24GB GDDR6, FSR 3.0, 6144 Stream Processors'
                 },
@@ -342,7 +335,7 @@
                     id: 11,
                     name: 'AMD Radeon RX 7900 XT',
                     price: 899.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/gpu/AMD Radeon RX 7900 XT.jpg',
                     category: 'gpu',
                     description: '20GB GDDR6, FSR 3.0, 5376 Stream Processors'
                 },
@@ -350,7 +343,7 @@
                     id: 12,
                     name: 'AMD Radeon RX 7800 XT',
                     price: 499.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/gpu/AMD Radeon RX 7800 XT.jpg',
                     category: 'gpu',
                     description: '16GB GDDR6, FSR 3.0, 3840 Stream Processors'
                 },
@@ -359,7 +352,7 @@
                     id: 13,
                     name: 'Corsair Dominator Platinum RGB 32GB',
                     price: 199.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/ram/Corsair Dominator Platinum RGB 32GB.webp',
                     category: 'ram',
                     description: 'DDR5 6000MHz, CL36, RGB'
                 },
@@ -367,7 +360,7 @@
                     id: 14,
                     name: 'G.Skill Trident Z5 RGB 64GB',
                     price: 349.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/ram/G.Skill Trident Z5 RGB 64GB.webp',
                     category: 'ram',
                     description: 'DDR5 6400MHz, CL32, RGB'
                 },
@@ -375,7 +368,7 @@
                     id: 15,
                     name: 'Kingston Fury Beast 32GB',
                     price: 149.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/ram/Kingston Fury Beast 32GB.webp',
                     category: 'ram',
                     description: 'DDR4 3600MHz, CL18'
                 },
@@ -384,7 +377,7 @@
                     id: 16,
                     name: 'Samsung 990 Pro 2TB',
                     price: 249.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/storage/Samsung 990 Pro 2TB.webp',
                     category: 'storage',
                     description: 'PCIe 4.0, 7450MB/s, 6900MB/s'
                 },
@@ -392,7 +385,7 @@
                     id: 17,
                     name: 'WD Black SN850X 4TB',
                     price: 399.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/storage/WD Black SN850X 4TB.webp',
                     category: 'storage',
                     description: 'PCIe 4.0, 7300MB/s, 6600MB/s'
                 },
@@ -400,7 +393,7 @@
                     id: 18,
                     name: 'Seagate FireCuda 530 1TB',
                     price: 129.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/storage/Seagate FireCuda 530 1TB.webp',
                     category: 'storage',
                     description: 'PCIe 4.0, 7300MB/s, 6000MB/s'
                 },
@@ -409,7 +402,7 @@
                     id: 19,
                     name: 'ASUS ROG Maximus Z790',
                     price: 499.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/motherboard/ASUS ROG Maximus Z790.png',
                     category: 'motherboard',
                     description: 'Z790, WiFi 6E, RGB, DDR5'
                 },
@@ -417,7 +410,7 @@
                     id: 20,
                     name: 'MSI MPG Z790 Carbon',
                     price: 399.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/motherboard/MSI MPG Z790 Carbon.png',
                     category: 'motherboard',
                     description: 'Z790, WiFi 6E, RGB, DDR5'
                 },
@@ -426,7 +419,7 @@
                     id: 21,
                     name: 'ASUS ROG Crosshair X670E',
                     price: 449.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/motherboard/ASUS ROG Crosshair X670E.png',
                     category: 'motherboard',
                     description: 'X670E, WiFi 6E, RGB, DDR5'
                 },
@@ -434,7 +427,7 @@
                     id: 22,
                     name: 'Gigabyte X670 Aorus Elite',
                     price: 299.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/motherboard/Gigabyte X670 Aorus Elite.png',
                     category: 'motherboard',
                     description: 'X670, WiFi 6, RGB, DDR5'
                 },
@@ -443,7 +436,7 @@
                     id: 23,
                     name: 'Corsair RM1000x',
                     price: 199.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/psu/Corsair RM1000x.jpg',
                     category: 'psu',
                     description: '1000W, 80+ Gold, Modular'
                 },
@@ -451,7 +444,7 @@
                     id: 24,
                     name: 'Seasonic PRIME TX-1300',
                     price: 299.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/psu/Seasonic PRIME TX-1300.jpg',
                     category: 'psu',
                     description: '1300W, 80+ Titanium, Modular'
                 },
@@ -459,7 +452,7 @@
                     id: 25,
                     name: 'EVGA SuperNOVA 850 G6',
                     price: 149.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/psu/EVGA SuperNOVA 850 G6.png',
                     category: 'psu',
                     description: '850W, 80+ Gold, Modular'
                 },
@@ -468,7 +461,7 @@
                     id: 26,
                     name: 'Corsair iCUE H150i Elite',
                     price: 199.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/cooling/Corsair iCUE H150i Elite.webp',
                     category: 'cooling',
                     description: '360mm, RGB, LCD Display'
                 },
@@ -476,7 +469,7 @@
                     id: 27,
                     name: 'NZXT Kraken X73',
                     price: 179.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/cooling/NZXT Kraken X73.webp',
                     category: 'cooling',
                     description: '360mm, RGB, LCD Display'
                 },
@@ -484,7 +477,7 @@
                     id: 28,
                     name: 'Noctua NH-D15',
                     price: 99.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/cooling/Noctua NH-D15.webp',
                     category: 'cooling',
                     description: 'Doble torre, 2 ventiladores'
                 },
@@ -493,7 +486,7 @@
                     id: 29,
                     name: 'Lian Li O11 Dynamic EVO',
                     price: 159.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/case/Lian Li O11 Dynamic EVO.jpg',
                     category: 'case',
                     description: 'Mid Tower, Cristal Templado, RGB'
                 },
@@ -501,7 +494,7 @@
                     id: 30,
                     name: 'Fractal Design Torrent',
                     price: 199.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/case/Fractal Design Torrent.webp',
                     category: 'case',
                     description: 'Full Tower, Cristal Templado'
                 },
@@ -509,7 +502,7 @@
                     id: 31,
                     name: 'Corsair 4000D Airflow',
                     price: 94.99,
-                    image: 'https://images.unsplash.com/photo-1591488320449-011701bb6704?q=80&w=1000',
+                    image: 'images/case/Corsair 4000D Airflow.webp',
                     category: 'case',
                     description: 'Mid Tower, Cristal Templado'
                 }
@@ -749,9 +742,10 @@
                 }
             });
 
-            // Evento para agregar al carrito desde la vista detallada
-            $('#productDetailAddToCart').click(function() {
-                const productId = $(this).data('product-id');
+            // Evento para agregar al carrito desde la página principal
+            $(document).on('click', '.add-to-cart', function(e) {
+                e.stopPropagation(); // Evitar que se abra el modal de detalles
+                const productId = $(this).data('id');
                 const existingItem = cart.find(item => item.id === productId);
                 
                 if (existingItem) {
@@ -765,9 +759,6 @@
                 
                 const product = products.find(p => p.id === productId);
                 showNotification(`¡${product.name} agregado al carrito!`);
-                
-                // Cerrar modal de detalles
-                $('#productDetailModal').addClass('hidden');
             });
 
             // Función para proceder al pago
@@ -866,7 +857,7 @@
                 $('#searchModalInput').focus();
             });
 
-            $('#userButton').click(function(e) {
+            $('#logoutBtn').click(function(e) {
                 e.stopPropagation();
                 closeAllModals();
                 const user = JSON.parse(localStorage.getItem('user') || '{}');
