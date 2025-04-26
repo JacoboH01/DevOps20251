@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <script>
+        // Verificar autenticación
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = 'index.html';
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Panel de Administración - PC HUB</title>
@@ -148,13 +155,6 @@
     <!-- Scripts -->
     <script>
         $(document).ready(function() {
-            // Verificar autenticación
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'index.html';
-                return;
-            }
-
             // Cargar productos
             function loadProducts() {
                 const products = JSON.parse(localStorage.getItem('products')) || [];
