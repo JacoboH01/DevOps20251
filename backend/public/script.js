@@ -6,7 +6,7 @@ $(document).ready(function() {
         const password = $("#password").val();
 
         $.ajax({
-            url: 'http://localhost:3000/api/auth/login',
+            url: '/api/auth/login',
             method: 'POST',
             data: { email, password },
             success: function(response) {
@@ -56,7 +56,7 @@ $(document).ready(function() {
         }
 
         $.ajax({
-            url: 'http://localhost:3000/api/auth/register',
+            url: '/api/auth/register',
             method: 'POST',
             data: { email, password },
             success: function(response) {
