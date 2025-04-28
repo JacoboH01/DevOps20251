@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login con Tailwind y jQuery</title>
+    <title>PC HUB | Login</title>
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jQuery -->
@@ -151,8 +151,9 @@
                         localStorage.setItem('token', response.token);
                         $("#error-message").addClass("hidden");
                         $("button[type='submit']").html('<i class="fas fa-spinner fa-spin"></i> Redirigiendo...');
+                        
                         setTimeout(() => {
-                            window.location.href = "tienda.html";
+                            window.location.href = "/tienda";
                         }, 1500);
                     },
                     error: function(xhr) {

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - CRUD Productos</title>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-white min-h-screen flex flex-col">
+
+    <header class="bg-gray-800 p-4 text-center text-2xl font-bold">
+        PCHub Admin - Gestión de Productos
+    </header>
+
+    <main class="flex-1 p-6">
+        <div class="flex justify-between mb-4">
+            <h2 class="text-xl font-semibold">Productos</h2>
+            <button id="btnAgregarProducto" class="bg-green-600 px-4 py-2 rounded hover:bg-green-700">Agregar Producto</button>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-center bg-gray-800 rounded">
+                <thead class="bg-gray-700">
+                    <tr>
+                        <th class="py-2">Imagen</th>
+                        <th>Nombre</th>
+                        <th>Precio</th>
+                        <th>Stock</th>
+                        <th>Categoría</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaProductos">
+                    <!-- Productos cargados aquí -->
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Modal Agregar Producto -->
+    <div id="modalAgregarProducto" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white text-black p-8 rounded shadow-lg w-96 relative">
+            <h2 class="text-2xl font-bold mb-6">Agregar Producto</h2>
+            <form id="formAgregarProducto" enctype="multipart/form-data">
+                <div class="mb-4">
+                    <label>Nombre</label>
+                    <input type="text" name="name" class="w-full border p-2" required>
+                </div>
+                <div class="mb-4">
+                    <label>Precio</label>
+                    <input type="number" name="price" class="w-full border p-2" required>
+                </div>
+                <div class="mb-4">
+                    <label>Stock</label>
+                    <input type="number" name="stock" class="w-full border p-2" required>
+                </div>
+                <div class="mb-4">
+                    <label>Categoría</label>
+                    <select name="category" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2">
+                        <option value="cpu">Procesadores</option>
+                        <option value="gpu">Tarjetas Gráficas</option>
+                        <option value="ram">Memoria RAM</option>
+                        <option value="storage">Almacenamiento</option>
+                        <option value="motherboard">Placas Madre</option>
+                        <option value="psu">Fuentes de Poder</option>
+                        <option value="cooling">Refrigeración</option>
+                        <option value="case">Gabinetes</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label>Descripción</label>
+                    <textarea name="description" class="w-full border p-2" required></textarea>
+                </div>
+                <div class="mb-6">
+                    <label>Imagen</label>
+                    <input type="file" name="image" class="w-full">
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" id="btnCancelarAgregar" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Producto -->
+    <div id="modalEditarProducto" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+        <div class="bg-white text-black p-8 rounded shadow-lg w-96 relative">
+            <h2 class="text-2xl font-bold mb-6">Editar Producto</h2>
+            <form id="formEditarProducto" enctype="multipart/form-data">
+                <input type="hidden" name="id" id="editarId">
+                <div class="mb-4">
+                    <label>Nombre</label>
+                    <input type="text" name="name" id="editarNombre" class="w-full border p-2" required>
+                </div>
+                <div class="mb-4">
+                    <label>Precio</label>
+                    <input type="number" name="price" id="editarPrecio" class="w-full border p-2" required>
+                </div>
+                <div class="mb-4">
+                    <label>Stock</label>
+                    <input type="number" name="stock" id="editarStock" class="w-full border p-2" required>
+                </div>
+                <div class="mb-4">
+                    <label for="editarCategoria">Categoría</label>
+                    <select name="category" id="editarCategoria" required class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2">
+                        <option value="cpu">Procesadores</option>
+                        <option value="gpu">Tarjetas Gráficas</option>
+                        <option value="ram">Memoria RAM</option>
+                        <option value="storage">Almacenamiento</option>
+                        <option value="motherboard">Placas Madre</option>
+                        <option value="psu">Fuentes de Poder</option>
+                        <option value="cooling">Refrigeración</option>
+                        <option value="case">Gabinetes</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label>Descripción</label>
+                    <textarea name="description" id="editarDescripcion" class="w-full border p-2" required></textarea>
+                </div>
+                <div class="mb-6">
+                    <label>Imagen (opcional)</label>
+                    <input type="file" name="image" id="editarImagen" class="w-full">
+                </div>
+                <div class="flex justify-end gap-4">
+                    <button type="button" id="btnCancelarEditar" class="bg-gray-500 text-white px-4 py-2 rounded">Cancelar</button>
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Guardar Cambios</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function() {
+
+            // Cargar productos al iniciar
+            cargarProductos();
+
+            // Mostrar el modal de agregar
+            $('#btnAgregarProducto').click(function() {
+                $('#modalAgregarProducto').removeClass('hidden');
+            });
+
+            // Cancelar agregar producto
+            $('#btnCancelarAgregar').click(function() {
+                $('#modalAgregarProducto').addClass('hidden');
+            });
+
+            // Agregar producto
+            $('#formAgregarProducto').submit(function (e) {
+                e.preventDefault();
+                const formData = new FormData(this);
+
+                $.ajax({
+                    url: '/api/products',
+                    method: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function () {
+                        alert('Producto agregado correctamente');
+                        $('#modalAgregarProducto').addClass('hidden');
+                        cargarProductos();
+                        $('#formAgregarProducto')[0].reset();
+                    },
+                    error: function ( error ) {
+                        alert('Error al agregar producto', error);
+                    }
+                });
+            });
+        });
+
+        // Función para cargar productos
+        function cargarProductos() {
+            $.get('/api/products', function (productos) {
+                const tabla = $('#tablaProductos');
+                tabla.empty();
+
+                productos.forEach(producto => {
+                    tabla.append([
+                        '<tr class="border-b border-gray-700">',
+                            `<td><img src="${producto.imageUrl}" alt="${producto.name}" class="w-16 h-16 object-cover mx-auto"></td>`,
+                            `<td>${producto.name}</td>`,
+                            `<td>$${producto.price}</td>`,
+                            `<td>${producto.stock}</td>`,
+                            `<td>${producto.category}</td>`,
+                            `<td class="flex gap-2 justify-center">`,
+                                `<button onclick="editarProducto(${producto.id})" class="bg-yellow-400 text-black p-2 rounded-full flex items-center justify-center" title="Editar">`,
+                                    `<i class="fas fa-edit"></i>`,
+                                `</button>`,
+                                `<button onclick="eliminarProducto(${producto.id})" class="bg-red-600 text-white p-2 rounded-full flex items-center justify-center" title="Eliminar">`,
+                                    `<i class="fas fa-trash-alt"></i>`,
+                                `</button>`,
+                            '</td>',
+                        '</tr>'
+                    ].join(''));
+                });
+            }).fail(function () {
+                alert('Error al cargar productos');
+            });
+        }
+
+        // Función para eliminar producto
+        function eliminarProducto(id) {
+            if (confirm('¿Deseas eliminar este producto?')) {
+                $.ajax({
+                    url: `/api/products/${id}`,
+                    method: 'DELETE',
+                    success: function () {
+                        alert('Producto eliminado correctamente');
+                        cargarProductos();
+                    },
+                    error: function () {
+                        alert('Error al eliminar producto');
+                    }
+                });
+            }
+        }
+
+        // Función para editar producto (sencilla por ahora)
+        function editarProducto(id) {
+            // Obtener el producto que quieres editar
+            $.get('/api/products', function(productos) {
+                const producto = productos.find(p => p.id === id);
+                if (!producto) return alert('Producto no encontrado');
+
+                // Llenar el formulario
+                $('#editarId').val(producto.id);
+                $('#editarNombre').val(producto.name);
+                $('#editarPrecio').val(producto.price);
+                $('#editarStock').val(producto.stock);
+                $('#editarCategoria').val(producto.category);
+                $('#editarDescripcion').val(producto.description);
+
+                $('#modalEditarProducto').removeClass('hidden');
+            });
+        }
+        $('#btnCancelarEditar').click(function () {
+            $('#modalEditarProducto').addClass('hidden');
+        });
+
+        $('#formEditarProducto').submit(function (e) {
+            e.preventDefault();
+
+            const id = $('#editarId').val();
+            const formData = new FormData(this);
+
+            $.ajax({
+                url: `/api/products/${id}`,
+                method: 'PUT',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function () {
+                    alert('Producto actualizado correctamente');
+                    $('#modalEditarProducto').addClass('hidden');
+                    cargarProductos();
+                },
+                error: function () {
+                    alert('Error al actualizar producto');
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
