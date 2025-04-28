@@ -5,7 +5,9 @@ const jwt = require('jsonwebtoken');
 const path = require('path');
 const bcrypt = require('bcryptjs');
 
+//Instacias de clases 
 const productsRouter = require('./routes/products');
+const authRouter = require('./routes/auth');
 const pool = require('./config/database');
 
 // Middleware
@@ -14,6 +16,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 app.use('/api/products', productsRouter);
+app.use('/api/auth', authRouter);
 
 // Servir archivos estáticos (HTML, CSS, JS, imágenes)
 app.use(express.static(path.join(__dirname, '../public')));
@@ -83,15 +86,15 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-app.get('/api/products', async (req, res) => {
-    try {
-        const { rows } = await pool.query('SELECT id, name, price, "imageUrl" AS image, category, description FROM products');
-        res.json(rows);
-    } catch (error) {
-        console.error('Error al obtener productos:', error);
-        res.status(500).json({ error: 'Error al obtener productos' });
-    }
-});
+// app.get('/api/products', async (req, res) => {
+//     try {
+//         const { rows } = await pool.query('SELECT id, name, price, "imageUrl" AS image, category, description FROM products');
+//         res.json(rows);
+//     } catch (error) {
+//         console.error('Error al obtener productos:', error);
+//         res.status(500).json({ error: 'Error al obtener productos' });
+//     }
+// });
 
 // Puerto
 const PORT = process.env.PORT || 3000;
