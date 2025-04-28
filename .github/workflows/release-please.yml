@@ -1,0 +1,15 @@
+# .github/workflows/release-please.yml
+name: Release Please
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: google-github-actions/release-please-action@v4
+        with:
+          release-type: simple  # Puedes usar "php", "node", etc. según tu proyecto
