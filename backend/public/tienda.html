@@ -1,15 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <script>
-        // Verificar si el usuario está autenticado
-        const token = localStorage.getItem('token');
-        const user = JSON.parse(localStorage.getItem('user') || '{}');
-        
-        if (!token || !user.email) {
-            window.location.href = 'index.html'; 
-        }
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PC HUB - Tienda</title>
@@ -26,7 +17,7 @@
         <div class="container mx-auto flex justify-between items-center">
             <h1 class="text-2xl font-bold">PC<span class="text-yellow-400">HUB</span></h1>
             <div class="flex items-center space-x-4">
-                <a href="admin.html" class="hover:text-yellow-400">
+                <a href="/admin" class="hover:text-yellow-400">
                     <i class="fas fa-cog"></i> Admin
                 </a>
                 <button id="cartBtn" class="hover:text-yellow-400">
@@ -94,6 +85,12 @@
             <!-- Los productos se cargarán dinámicamente aquí -->
         </div>
     </main>
+
+    <!-- Spinner de carga con texto -->
+    <div id="spinner" class="fixed inset-0 bg-black bg-opacity-50 flex flex-col items-center justify-center z-50 hidden">
+        <div class="animate-spin rounded-full h-24 w-24 border-t-4 border-b-4 border-yellow-400 mb-6"></div>
+        <p class="text-yellow-400 text-xl font-semibold animate-pulse">Cargando productos...</p>
+    </div>
 
     <!-- Pie de página -->
     <footer class="bg-gray-800 text-white mt-16">
@@ -331,6 +328,15 @@
     <!-- Scripts -->
     <script>
         $(document).ready(function() {
+            // Verificar si el usuario está autenticado
+            const token = localStorage.getItem('token');
+            //const user = JSON.parse(localStorage.getItem('user') || '{}');
+            console.log("token: " + token); 
+            if (!token) {
+                window.location.href = 'index.html';
+                return;
+            }
+
             // Cerrar sesión
             $('#logoutBtn').click(function() {
                 localStorage.clear(); // Limpiar todo el localStorage
@@ -345,268 +351,22 @@
                 updateCartDisplay();
             });
 
-            // Datos de ejemplo de productos
-            const products = [
-                // Procesadores Intel
-                {
-                    id: 1,
-                    name: 'Intel Core i9-13900K',
-                    price: 799.99,
-                    image: 'images/cpu/Intel Core i9-13900K.jpg',
-                    category: 'cpu',
-                    description: '24 núcleos (8P + 16E) / 32 hilos, hasta 5.8GHz'
-                },
-                {
-                    id: 2,
-                    name: 'Intel Core i7-13700K',
-                    price: 499.99,
-                    image: 'images/cpu/Intel Core i7-13700K.webp',
-                    category: 'cpu',
-                    description: '16 núcleos (8P + 8E) / 24 hilos, hasta 5.4GHz'
-                },
-                {
-                    id: 3,
-                    name: 'Intel Core i5-13600K',
-                    price: 349.99,
-                    image: 'images/cpu/Intel Core i5-13600K.webp',
-                    category: 'cpu',
-                    description: '14 núcleos (6P + 8E) / 20 hilos, hasta 5.1GHz'
-                },
-                // Procesadores AMD
-                {
-                    id: 4,
-                    name: 'AMD Ryzen 9 7950X',
-                    price: 699.99,
-                    image: 'images/cpu/AMD Ryzen 9 7950X.jpg',
-                    category: 'cpu',
-                    description: '16 núcleos / 32 hilos, hasta 5.7GHz'
-                },
-                {
-                    id: 5,
-                    name: 'AMD Ryzen 7 7800X3D',
-                    price: 449.99,
-                    image: 'images/cpu/AMD Ryzen 7 7800X3D.jpg',
-                    category: 'cpu',
-                    description: '8 núcleos / 16 hilos, 3D V-Cache, hasta 5.0GHz'
-                },
-                {
-                    id: 6,
-                    name: 'AMD Ryzen 5 7600X',
-                    price: 299.99,
-                    image: 'images/cpu/AMD Ryzen 5 7600X.jpg',
-                    category: 'cpu',
-                    description: '6 núcleos / 12 hilos, hasta 5.3GHz'
-                },
-                // Tarjetas Gráficas NVIDIA
-                {
-                    id: 7,
-                    name: 'NVIDIA RTX 4090',
-                    price: 1599.99,
-                    image: 'images/gpu/NVIDIA RTX 4090.jpg',
-                    category: 'gpu',
-                    description: '24GB GDDR6X, DLSS 3.0, 16384 CUDA Cores'
-                },
-                {
-                    id: 8,
-                    name: 'NVIDIA RTX 4080',
-                    price: 1199.99,
-                    image: 'images/gpu/NVIDIA RTX 4080.jpg',
-                    category: 'gpu',
-                    description: '16GB GDDR6X, DLSS 3.0, 9728 CUDA Cores'
-                },
-                {
-                    id: 9,
-                    name: 'NVIDIA RTX 4070 Ti',
-                    price: 799.99,
-                    image: 'images/gpu/NVIDIA RTX 4070 Ti.jpg',
-                    category: 'gpu',
-                    description: '12GB GDDR6X, DLSS 3.0, 7680 CUDA Cores'
-                },
-                // Tarjetas Gráficas AMD
-                {
-                    id: 10,
-                    name: 'AMD Radeon RX 7900 XTX',
-                    price: 999.99,
-                    image: 'images/gpu/AMD Radeon RX 7900 XTX.jpg',
-                    category: 'gpu',
-                    description: '24GB GDDR6, FSR 3.0, 6144 Stream Processors'
-                },
-                {
-                    id: 11,
-                    name: 'AMD Radeon RX 7900 XT',
-                    price: 899.99,
-                    image: 'images/gpu/AMD Radeon RX 7900 XT.jpg',
-                    category: 'gpu',
-                    description: '20GB GDDR6, FSR 3.0, 5376 Stream Processors'
-                },
-                {
-                    id: 12,
-                    name: 'AMD Radeon RX 7800 XT',
-                    price: 499.99,
-                    image: 'images/gpu/AMD Radeon RX 7800 XT.jpg',
-                    category: 'gpu',
-                    description: '16GB GDDR6, FSR 3.0, 3840 Stream Processors'
-                },
-                // Memoria RAM
-                {
-                    id: 13,
-                    name: 'Corsair Dominator Platinum RGB 32GB',
-                    price: 199.99,
-                    image: 'images/ram/Corsair Dominator Platinum RGB 32GB.webp',
-                    category: 'ram',
-                    description: 'DDR5 6000MHz, CL36, RGB'
-                },
-                {
-                    id: 14,
-                    name: 'G.Skill Trident Z5 RGB 64GB',
-                    price: 349.99,
-                    image: 'images/ram/G.Skill Trident Z5 RGB 64GB.webp',
-                    category: 'ram',
-                    description: 'DDR5 6400MHz, CL32, RGB'
-                },
-                {
-                    id: 15,
-                    name: 'Kingston Fury Beast 32GB',
-                    price: 149.99,
-                    image: 'images/ram/Kingston Fury Beast 32GB.webp',
-                    category: 'ram',
-                    description: 'DDR4 3600MHz, CL18'
-                },
-                // Almacenamiento
-                {
-                    id: 16,
-                    name: 'Samsung 990 Pro 2TB',
-                    price: 249.99,
-                    image: 'images/storage/Samsung 990 Pro 2TB.webp',
-                    category: 'storage',
-                    description: 'PCIe 4.0, 7450MB/s, 6900MB/s'
-                },
-                {
-                    id: 17,
-                    name: 'WD Black SN850X 4TB',
-                    price: 399.99,
-                    image: 'images/storage/WD Black SN850X 4TB.webp',
-                    category: 'storage',
-                    description: 'PCIe 4.0, 7300MB/s, 6600MB/s'
-                },
-                {
-                    id: 18,
-                    name: 'Seagate FireCuda 530 1TB',
-                    price: 129.99,
-                    image: 'images/storage/Seagate FireCuda 530 1TB.webp',
-                    category: 'storage',
-                    description: 'PCIe 4.0, 7300MB/s, 6000MB/s'
-                },
-                // Placas Madre Intel
-                {
-                    id: 19,
-                    name: 'ASUS ROG Maximus Z790',
-                    price: 499.99,
-                    image: 'images/motherboard/ASUS ROG Maximus Z790.png',
-                    category: 'motherboard',
-                    description: 'Z790, WiFi 6E, RGB, DDR5'
-                },
-                {
-                    id: 20,
-                    name: 'MSI MPG Z790 Carbon',
-                    price: 399.99,
-                    image: 'images/motherboard/MSI MPG Z790 Carbon.png',
-                    category: 'motherboard',
-                    description: 'Z790, WiFi 6E, RGB, DDR5'
-                },
-                // Placas Madre AMD
-                {
-                    id: 21,
-                    name: 'ASUS ROG Crosshair X670E',
-                    price: 449.99,
-                    image: 'images/motherboard/ASUS ROG Crosshair X670E.png',
-                    category: 'motherboard',
-                    description: 'X670E, WiFi 6E, RGB, DDR5'
-                },
-                {
-                    id: 22,
-                    name: 'Gigabyte X670 Aorus Elite',
-                    price: 299.99,
-                    image: 'images/motherboard/Gigabyte X670 Aorus Elite.png',
-                    category: 'motherboard',
-                    description: 'X670, WiFi 6, RGB, DDR5'
-                },
-                // Fuentes de Poder
-                {
-                    id: 23,
-                    name: 'Corsair RM1000x',
-                    price: 199.99,
-                    image: 'images/psu/Corsair RM1000x.jpg',
-                    category: 'psu',
-                    description: '1000W, 80+ Gold, Modular'
-                },
-                {
-                    id: 24,
-                    name: 'Seasonic PRIME TX-1300',
-                    price: 299.99,
-                    image: 'images/psu/Seasonic PRIME TX-1300.jpg',
-                    category: 'psu',
-                    description: '1300W, 80+ Titanium, Modular'
-                },
-                {
-                    id: 25,
-                    name: 'EVGA SuperNOVA 850 G6',
-                    price: 149.99,
-                    image: 'images/psu/EVGA SuperNOVA 850 G6.png',
-                    category: 'psu',
-                    description: '850W, 80+ Gold, Modular'
-                },
-                // Refrigeración
-                {
-                    id: 26,
-                    name: 'Corsair iCUE H150i Elite',
-                    price: 199.99,
-                    image: 'images/cooling/Corsair iCUE H150i Elite.webp',
-                    category: 'cooling',
-                    description: '360mm, RGB, LCD Display'
-                },
-                {
-                    id: 27,
-                    name: 'NZXT Kraken X73',
-                    price: 179.99,
-                    image: 'images/cooling/NZXT Kraken X73.webp',
-                    category: 'cooling',
-                    description: '360mm, RGB, LCD Display'
-                },
-                {
-                    id: 28,
-                    name: 'Noctua NH-D15',
-                    price: 99.99,
-                    image: 'images/cooling/Noctua NH-D15.webp',
-                    category: 'cooling',
-                    description: 'Doble torre, 2 ventiladores'
-                },
-                // Gabinetes
-                {
-                    id: 29,
-                    name: 'Lian Li O11 Dynamic EVO',
-                    price: 159.99,
-                    image: 'images/case/Lian Li O11 Dynamic EVO.jpg',
-                    category: 'case',
-                    description: 'Mid Tower, Cristal Templado, RGB'
-                },
-                {
-                    id: 30,
-                    name: 'Fractal Design Torrent',
-                    price: 199.99,
-                    image: 'images/case/Fractal Design Torrent.webp',
-                    category: 'case',
-                    description: 'Full Tower, Cristal Templado'
-                },
-                {
-                    id: 31,
-                    name: 'Corsair 4000D Airflow',
-                    price: 94.99,
-                    image: 'images/case/Corsair 4000D Airflow.webp',
-                    category: 'case',
-                    description: 'Mid Tower, Cristal Templado'
-                }
-            ];
+            let products = [];
+
+            function fetchProducts() {
+                // Mostrar el spinner al empezar
+                $('#spinner').removeClass('hidden');
+
+                $.get('/api/products', function(data) {
+                    products = data;
+                    renderProducts();
+                }).fail(function() {
+                    console.error('Error al cargar productos.');
+                }).always(function() {
+                    // Ocultar el spinner al terminar
+                    $('#spinner').addClass('hidden');
+                });
+            }
 
             // Carrito de compras
             let cart = JSON.parse(localStorage.getItem('cart')) || [];
@@ -751,29 +511,38 @@
 
             // Función para renderizar productos modificada
             function renderProducts() {
-                console.log('Renderizando productos...');
                 const grid = $('#productsGrid');
-                grid.empty();
+                grid.empty(); // Limpia el grid antes de volver a pintar
 
                 const filteredProducts = filterAndSortProducts();
 
+                if (filteredProducts.length === 0) {
+                    // Mostrar un mensaje amigable si no hay productos
+                    grid.append(`
+                        <div class="col-span-full text-center mt-8">
+                            <h2 class="text-2xl font-bold text-white">No hay productos disponibles</h2>
+                            <p class="text-gray-400 mt-2">Por favor, vuelve más tarde.</p>
+                        </div>
+                    `);
+                    return; // Terminar la función aquí
+                }
+
+                // Si sí hay productos, renderizarlos como siempre
                 filteredProducts.forEach(product => {
                     grid.append(`
                         <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition-transform duration-300 cursor-pointer product-card" data-product-id="${product.id}">
                             <div class="relative">
-                                <img src="${product.image}" alt="${product.name}" 
-                                    class="w-full h-48 object-cover hover:opacity-90 transition-opacity">
+                                <img src="${product.image}" alt="${product.name}" class="w-full h-48 object-cover hover:opacity-90 transition-opacity">
                                 <div class="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-sm">
                                     ${product.category.toUpperCase()}
                                 </div>
                             </div>
                             <div class="p-4">
                                 <h3 class="text-white font-semibold mb-2">${product.name}</h3>
-                                <p class="text-gray-400 text-sm mb-2 line-clamp-2">${product.description}</p>
+                                <p class="text-gray-400 text-sm mb-2">${product.description}</p>
                                 <div class="flex justify-between items-center">
                                     <p class="text-yellow-400 font-bold text-lg">$${product.price}</p>
-                                    <button class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all add-to-cart" 
-                                            data-id="${product.id}">
+                                    <button class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all add-to-cart" data-id="${product.id}">
                                         <i class="fas fa-shopping-cart mr-2"></i>Agregar
                                     </button>
                                 </div>
@@ -782,7 +551,7 @@
                     `);
                 });
 
-                // Actualizar contador de productos
+                // Actualizar contador de productos (opcional si tienes un contador)
                 $('#productCount').text(`${filteredProducts.length} productos encontrados`);
             }
 
@@ -1115,8 +884,8 @@
             });
 
             // Inicializar la página
-            console.log('Inicializando página...'); // Para debugging
-            renderProducts();
+            console.log('Inicializando página...'); 
+            fetchProducts();
             updateCartDisplay();
 
             // Carrusel de productos destacados

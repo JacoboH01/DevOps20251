@@ -15,6 +15,7 @@ $(document).ready(function() {
                 $("button[type='submit']").html('<i class="fas fa-spinner fa-spin"></i> Redirigiendo...');
                 setTimeout(() => {
                     window.location.href = "tienda.html";
+                    alert('esta es la fjuncion');
                 }, 1500);
             },
             error: function(xhr) {

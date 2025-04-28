@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PC HUB</title>
+    <title>PC HUB | Login</title>
     <!-- Tailwind CSS via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- jQuery -->
@@ -137,38 +137,34 @@
             });
 
             // Lógica de inicio de sesión
+
             $("#loginForm").submit(function(e) {
                 e.preventDefault();
-                
-                // Credenciales de prueba
-                const testCredentials = {
-                    email: "admin@pchub.com",
-                    password: "gaming123"
-                };
+                const email = $("#email").val();
+                const password = $("#password").val();
 
-                const email = $("#email").val().trim();
-                const password = $("#password").val().trim();
-
-                if (email === testCredentials.email && password === testCredentials.password) {
-                    // Guardar datos de sesión
-                    localStorage.setItem('token', 'mock_token_' + Date.now());
-                    localStorage.setItem('user', JSON.stringify({
-                        id: 1,
-                        email: testCredentials.email
-                    }));
-                    
-                    // Redirigir a la tienda
-                    window.location.href = "tienda.html";
-                } else {
-                    // Mostrar mensaje de error
-                    $("#error-message")
-                        .text("⚠️ Credenciales incorrectas. Use: admin@pchub.com / gaming123")
-                        .removeClass("hidden")
-                        .hide()
-                        .fadeIn();
-                }
+                $.ajax({
+                    url: 'http://localhost:3000/api/auth/login',
+                    method: 'POST',
+                    data: { email, password },
+                    success: function(response) {
+                        localStorage.setItem('token', response.token);
+                        $("#error-message").addClass("hidden");
+                        $("button[type='submit']").html('<i class="fas fa-spinner fa-spin"></i> Redirigiendo...');
+                        
+                        setTimeout(() => {
+                            window.location.href = "/tienda";
+                        }, 1500);
+                    },
+                    error: function(xhr) {
+                        $("#error-message")
+                            .text("⚠️ " + (xhr.responseJSON?.error || "Error al iniciar sesión"))
+                            .removeClass("hidden")
+                            .hide()
+                            .fadeIn();
+                    }
+                });
             });
-
             // Lógica de registro
             $("#registerForm").submit(function(e) {
                 e.preventDefault();
