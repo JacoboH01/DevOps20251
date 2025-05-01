@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Usuarios</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <!-- Axios -->
+  <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-100">
+  <!-- El menú lateral se insertará automáticamente -->
+  <script src="js/sidebar.js"></script>
+
+  <div class="container mx-auto p-4">
+    <h1 class="text-2xl mb-4">Gestión de Usuarios</h1>
+
+    <form id="userForm" class="mb-4 bg-white p-4 rounded shadow">
+      <input type="hidden" id="userId">
+      <div class="mb-2">
+        <label for="name" class="block">Nombres</label>
+        <input type="text" id="name" class="border p-2 w-full">
+      </div>
+      <div class="mb-2">
+        <label for="email" class="block">Correo</label>
+        <input type="text" id="email" class="border p-2 w-full">
+      </div>
+      <div class="mb-2">
+        <label for="password" class="block">Contraseña</label>
+        <input type="password" id="password" class="border p-2 w-full">
+      </div>
+      <div class="mb-2">
+        <label for="role" class="block">Rol</label>
+        <select id="role" class="border p-2 w-full">
+          <option value="user">Usuario</option>
+          <option value="admin">Administrador</option>
+        </select>
+      </div>
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Guardar</button>
+      <button type="button" id="cancel" class="bg-gray-500 text-white px-4 py-2 rounded ml-2">Cancelar</button>
+    </form>
+
+    <table class="min-w-full bg-white shadow rounded">
+      <thead>
+        <tr>
+          <th class="px-4 py-2">Nombres</th>
+          <th class="px-4 py-2">Usuario</th>
+          <th class="px-4 py-2">Rol</th>
+          <th class="px-4 py-2">Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="usersTable" class="divide-y divide-gray-200"></tbody>
+    </table>
+  </div>
+
+  <script>
+    const apiUrl = '/api/users';
+
+    function fetchUsers() {
+      $.get(apiUrl, data => {
+        const rows = data.map(u => `
+          <tr>
+            <td class="px-4 py-2">${u.name}</td>
+            <td class="px-4 py-2">${u.email}</td>
+            <td class="px-4 py-2">${u.role}</td>
+            <td class="px-4 py-2 space-x-2">
+              <button class="edit bg-yellow-400 px-2 rounded" data-id="${u.id}">Editar</button>
+              <button class="delete bg-red-500 text-white px-2 rounded" data-id="${u.id}">Eliminar</button>
+            </td>
+          </tr>
+        `);
+        $('#usersTable').html(rows.join(''));
+      });
+    }
+
+    function resetForm() {
+      $('#userId').val('');
+      $('#name').val('');
+      $('#email').val('');
+      $('#password').val('');
+      $('#role').val('user');
+    }
+
+    $(document).ready(function() {
+      fetchUsers();
+
+      $('#userForm').submit(function(e) {
+        e.preventDefault();
+        const id = $('#userId').val();
+        const userData = {
+          name: $('#name').val(),
+          email: $('#email').val(),
+          password: $('#password').val(),
+          role: $('#role').val()
+        };
+
+        if (id) {
+          $.ajax({
+            url: `${apiUrl}/${id}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(userData),
+            success: function() {
+              fetchUsers(); resetForm();
+            }
+          });
+        } else {
+          $.ajax({
+            url: apiUrl,
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(userData),
+            success: function() {
+              fetchUsers(); resetForm();
+            }
+          });
+        }
+      });
+
+      $('#cancel').click(resetForm);
+
+      $('#usersTable').on('click', '.edit', function() {
+        const id = $(this).data('id');
+        $.get(`${apiUrl}/${id}`, function(u) {
+          $('#userId').val(u.id);
+          $('#name').val(u.name);
+          $('#email').val(u.email);
+          $('#role').val(u.role);
+        });
+      });
+
+      $('#usersTable').on('click', '.delete', function() {
+        const id = $(this).data('id');
+        if (confirm('¿Deseas eliminar este usuario?')) {
+          $.ajax({
+            url: `${apiUrl}/${id}`,
+            method: 'DELETE',
+            success: function() {
+              fetchUsers();
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
