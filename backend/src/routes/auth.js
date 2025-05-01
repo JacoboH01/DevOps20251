@@ -43,25 +43,4 @@ router.get('/', async (req, res) => {
   }
 });
 
-// router.post('/login', async (req, res) => {
-//   try {
-//     const { email, password } = req.body;
-//     const user = await User.findByEmail(email);
-    
-//     if (!user) {
-//       return res.status(401).json({ error: 'Credenciales inválidas' });
-//     }
-
-//     const validPassword = await bcrypt.compare(password, user.password);
-//     if (!validPassword) {
-//       return res.status(401).json({ error: 'Credenciales inválidas' });
-//     }
-
-//     const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET);
-//     res.json({ token });
-//   } catch (error) {
-//     res.status(500).json({ error: error.message });
-//   }
-// });
-
 module.exports = router; 

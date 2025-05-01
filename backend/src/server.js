@@ -1,5 +1,6 @@
 const express = require('express');
 const app = express();
+app.disable("x-powered-by");
 const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const path = require('path');
@@ -33,10 +34,6 @@ app.get('/', (req, res) => {
 // Ruta /tienda para servir tienda.html
 app.get('/tienda', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/tienda.html'));
-});
-
-app.get('/admin', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/admin.html'));
 });
 
 app.get('/users', (req, res) => {
@@ -96,16 +93,6 @@ app.post('/api/auth/login', async (req, res) => {
         res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
-
-// app.get('/api/products', async (req, res) => {
-//     try {
-//         const { rows } = await pool.query('SELECT id, name, price, "imageUrl" AS image, category, description FROM products');
-//         res.json(rows);
-//     } catch (error) {
-//         console.error('Error al obtener productos:', error);
-//         res.status(500).json({ error: 'Error al obtener productos' });
-//     }
-// });
 
 // Puerto
 const PORT = process.env.PORT || 3000;
