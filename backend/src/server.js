@@ -8,6 +8,7 @@ const bcrypt = require('bcryptjs');
 //Instacias de clases 
 const productsRouter = require('./routes/products');
 const authRouter = require('./routes/auth');
+const usersRouter = require('./routes/users');
 const pool = require('./config/database');
 
 // Middleware
@@ -15,11 +16,13 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Carpeta pública
+app.use(express.static(path.join(__dirname, '../public')));
+
+// Rutas de API
 app.use('/api/products', productsRouter);
 app.use('/api/auth', authRouter);
-
-// Servir archivos estáticos (HTML, CSS, JS, imágenes)
-app.use(express.static(path.join(__dirname, '../public')));
+app.use('/api/users', usersRouter);
 
 
 // Ruta raíz (redirige a index.html automáticamente gracias a express.static)
@@ -34,6 +37,14 @@ app.get('/tienda', (req, res) => {
 
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
+
+app.get('/users', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/usuarios.html'));
+});
+
+app.get('/products', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/productos.html'));
 });
 
 // Rutas de autenticación
