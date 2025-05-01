@@ -20,7 +20,17 @@ const uploadImage = multer({
             let fileName = req.body.nombre || 'unnamed';
             cb(null, fileName + path.extname(file.originalname));
         }
-    })
+    }),
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5 MB
+    },
+    fileFilter: function (req, file, cb) {
+        if (file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only image files are allowed!'), false);
+        }
+    }
 });
 
 // CRUD Products
