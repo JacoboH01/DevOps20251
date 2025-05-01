@@ -5,13 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión de Usuarios</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"
-          integrity="sha256-/xUj+3OJ+Y6k5t5BUL6X+9cEjiA0F7Q6UW3kBf00S/g="
-          crossorigin="anonymous"></script>
+  <script
+  src="https://code.jquery.com/jquery-3.6.0.min.js"
+  integrity="sha384-vtXRMe3mGCbOeIDghMMzdoQGzZH5Mj9mBYGaCGYQl1GpH2CWUsmKP99Vg4EkycQ+ccMIh7PavCPz0MzRiRfHA"
+  crossorigin="anonymous"></script>
 </head>
 <body class="bg-gray-100">
   <!-- El menú lateral se insertará automáticamente -->
-  <script type="text/javascript" src="js/sidebar.js"></script>
+  <script src="js/sidebar.js"></script>
 
   <div class="container mx-auto p-4">
     <h1 class="text-2xl mb-4">Gestión de Usuarios</h1>
@@ -54,7 +55,7 @@
     </table>
   </div>
 
-  <script type="text/javascript">
+  <script>
     const apiUrl = '/api/users';
 
     function fetchUsers() {
@@ -82,10 +83,10 @@
       $('#role').val('user');
     }
 
-    $(document).ready(() => {
+    $(document).ready(function() {
       fetchUsers();
 
-      $('#userForm').submit((e) => {
+      $('#userForm').submit(function(e) {
         e.preventDefault();
         const id = $('#userId').val();
         const userData = {
@@ -101,9 +102,8 @@
             method: 'PUT',
             contentType: 'application/json',
             data: JSON.stringify(userData),
-            success: () => {
-              fetchUsers();
-              resetForm();
+            success: function() {
+              fetchUsers(); resetForm();
             }
           });
         } else {
@@ -112,9 +112,8 @@
             method: 'POST',
             contentType: 'application/json',
             data: JSON.stringify(userData),
-            success: () => {
-              fetchUsers();
-              resetForm();
+            success: function() {
+              fetchUsers(); resetForm();
             }
           });
         }
@@ -124,7 +123,7 @@
 
       $('#usersTable').on('click', '.edit', function() {
         const id = $(this).data('id');
-        $.get(`${apiUrl}/${id}`, (u) => {
+        $.get(`${apiUrl}/${id}`, function(u) {
           $('#userId').val(u.id);
           $('#name').val(u.name);
           $('#email').val(u.email);
@@ -138,7 +137,7 @@
           $.ajax({
             url: `${apiUrl}/${id}`,
             method: 'DELETE',
-            success: () => {
+            success: function() {
               fetchUsers();
             }
           });
