@@ -10,6 +10,7 @@ const bcrypt = require('bcryptjs');
 const productsRouter = require('./routes/products');
 const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
+const profileRouter = require('./routes/profile');
 const pool = require('./config/database');
 
 // Middleware
@@ -24,7 +25,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use('/api/products', productsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
-
+app.use('/api/profile', profileRouter);
 
 // Ruta raíz (redirige a index.html automáticamente gracias a express.static)
 app.get('/', (req, res) => {
@@ -44,6 +45,11 @@ app.get('/products', (req, res) => {
     res.sendFile(path.join(__dirname, '../public/productos.html'));
 });
 
+app.get('/profile', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/perfil.html'));
+});
+
+
 // Rutas de autenticación
 app.post('/api/auth/login', async (req, res) => {
     try {
@@ -54,7 +60,7 @@ app.post('/api/auth/login', async (req, res) => {
             return res.status(400).json({ error: 'Email y contraseña son requeridos' });
         }
 
-        const query = 'SELECT id, email, password FROM users WHERE email = $1';
+        const query = 'SELECT id, email, password, role FROM users WHERE email = $1';
         const { rows } = await pool.query(query, [email]);
         const user = rows[0];
 
@@ -72,7 +78,8 @@ app.post('/api/auth/login', async (req, res) => {
         const token = jwt.sign(
             {
                 userId: user.id,
-                email: user.email
+                email: user.email,
+                role: user.role
             },
             process.env.JWT_SECRET || 'secreto_temporal',
             { expiresIn: '24h' }
@@ -84,7 +91,8 @@ app.post('/api/auth/login', async (req, res) => {
             token,
             user: {
                 id: user.id,
-                email: user.email
+                email: user.email,
+                role: user.role
             }
         });
 

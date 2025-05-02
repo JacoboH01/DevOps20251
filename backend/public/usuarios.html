@@ -5,10 +5,14 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gestión de Usuarios</title>
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
-  <script
-  src="https://code.jquery.com/jquery-3.6.0.min.js"
-  integrity="sha384-vtXRMe3mGCbOeIDghMMzdoQGzZH5Mj9mBYGaCGYQl1GpH2CWUsmKP99Vg4EkycQ+ccMIh7PavCPz0MzRiRfHA"
-  crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+    // Verificar si el usuario está autenticado
+    const token = localStorage.getItem('token');
+    if (!token) {
+        window.location.href = '/';
+    }
+</script>
 </head>
 <body class="bg-gray-100">
   <!-- El menú lateral se insertará automáticamente -->

@@ -5,13 +5,20 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PC HUB - Tienda</title>
     <!-- Tailwind CSS via CDN -->
-    <script src="https://cdn.tailwindcss.com" integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
     <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <!-- Axios -->
-    <script src="https://unpkg.com/axios/dist/axios.min.js" integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"></script>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        // Verificar si el usuario está autenticado
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+        }
+    </script>
 </head>
 <body class="bg-gray-900 min-h-screen">
     <!-- El menú lateral se insertará automáticamente -->
@@ -25,9 +32,6 @@
                 <button id="cartBtn" class="hover:text-yellow-400">
                     <i class="fas fa-shopping-cart"></i>
                     <span id="cartCount" class="bg-yellow-400 text-black px-2 py-1 rounded-full text-xs">0</span>
-                </button>
-                <button id="logoutBtn" class="bg-red-600 px-4 py-2 rounded hover:bg-red-700">
-                    <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </button>
             </div>
         </div>
@@ -219,26 +223,6 @@
         </div>
     </div>
 
-    <!-- Modal de usuario -->
-    <div id="userModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
-        <div class="absolute top-20 right-4 w-80 bg-gray-800 rounded-lg shadow-xl">
-            <div class="p-4 border-b border-gray-700 flex justify-between items-center">
-                <h3 class="text-white font-semibold">Perfil de Usuario</h3>
-                <button class="modal-close text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700">
-                    <i class="fas fa-times text-xl"></i>
-                </button>
-            </div>
-            <div class="p-4">
-                <div class="text-gray-300 mb-4">
-                    <p><i class="fas fa-envelope mr-2"></i><span id="userEmail"></span></p>
-                </div>
-                <button id="logoutButtonModal" class="w-full bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700 transition-colors">
-                    <i class="fas fa-sign-out-alt mr-2"></i>Cerrar Sesión
-                </button>
-            </div>
-        </div>
-    </div>
-
     <!-- Modal de pago -->
     <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-md bg-gray-800 rounded-lg p-6">
@@ -330,19 +314,13 @@
     <!-- Scripts -->
     <script>
         $(document).ready(function() {
-            // Verificar si el usuario está autenticado
-            const token = localStorage.getItem('token');
-            if (!token) {
-                window.location.href = 'index.html';
-                return;
+            const userRole = localStorage.getItem('userRole');
+            if (userRole === 'admin') {
+                $('#cartBtn').hide();
+            }else{
+                $('#cartBtn').show();
             }
-
-            // Cerrar sesión
-            $('#logoutBtn').click(function() {
-                localStorage.clear(); // Limpiar todo el localStorage
-                window.location.href = 'index.html';
-            });
-
+            
             // Abrir/cerrar carrito
             $('#cartBtn').click(function(e) {
                 e.stopPropagation();
@@ -731,7 +709,7 @@
 
             // Función para cerrar todos los modales
             function closeAllModals() {
-                $('#searchModal, #userModal, #cartModal, #paymentModal, #productDetailModal').addClass('hidden');
+                $('#searchModal, #cartModal, #paymentModal, #productDetailModal').addClass('hidden');
             }
 
             // Cerrar modal al hacer clic en el botón de cierre
@@ -784,14 +762,6 @@
                 currentSearch = '';
                 $('#searchModalInput').val('');
                 renderProducts();
-            });
-
-            $('#logoutBtn').click(function(e) {
-                e.stopPropagation();
-                closeAllModals();
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                $('#userEmail').text(user.email || 'Usuario');
-                $('#userModal').removeClass('hidden');
             });
 
             // Modificar el checkout para usar el nuevo sistema
@@ -895,7 +865,6 @@
             });
 
             // Inicializar la página
-            console.log('Inicializando página...'); 
             fetchProducts();
             updateCartDisplay();
 

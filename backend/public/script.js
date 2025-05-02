@@ -11,6 +11,9 @@ $(document).ready(function() {
             data: { email, password },
             success: function(response) {
                 localStorage.setItem('token', response.token);
+                localStorage.setItem('userId', response.user.id);
+                localStorage.setItem('userRole', response.user.role);
+                
                 $("#error-message").addClass("hidden");
                 $("button[type='submit']").html('<i class="fas fa-spinner fa-spin"></i> Redirigiendo...');
                 setTimeout(() => {

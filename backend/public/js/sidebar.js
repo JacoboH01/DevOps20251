@@ -4,17 +4,20 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuItems = {
         admin: [
             { path: '/dashboard', label: 'Dashboard', icon: '📊' },
+            { path: '/tienda', label: 'Ir a la Tienda', icon: '🛒' },
             { path: '/users', label: 'Gestión de Usuarios', icon: '👥' },
             { path: '/products', label: 'Gestión de Productos', icon: '🛍️' },
             { path: '/orders', label: 'Gestión de Pedidos', icon: '📦' },
             { path: '/reports', label: 'Reportes', icon: '📈' },
-            { path: '/settings', label: 'Configuración', icon: '⚙️' }
+            { path: '/settings', label: 'Configuración', icon: '⚙️' },
+            { path: '#logout', label: 'Cerrar Sesión', icon: '🚪' }
         ],
         user: [
             { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-            { path: '/products', label: 'Productos', icon: '🛍️' },
+            { path: '/tienda', label: 'Ir a la Tienda', icon: '🛒' },
             { path: '/orders', label: 'Mis Pedidos', icon: '📦' },
-            { path: '/profile', label: 'Mi Perfil', icon: '👤' }
+            { path: '/profile', label: 'Mi Perfil', icon: '👤' },
+            { path: '#logout', label: 'Cerrar Sesión', icon: '🚪' }
         ]
     };
 
@@ -52,5 +55,15 @@ document.addEventListener('DOMContentLoaded', function() {
     `;
 
     document.body.insertBefore(sidebar, document.body.firstChild);
+
+    // Después de insertar el sidebar con innerHTML
+    document.querySelectorAll('a[href="#logout"]').forEach(link => {
+        link.addEventListener('click', function (e) {
+            e.preventDefault();
+            localStorage.clear();
+            window.location.href = '/';
+        });
+    });
+
     document.body.style.marginLeft = '16rem';
 }); 
