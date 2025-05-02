@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Perfil</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <script>
+        // Verificar si el usuario está autenticado
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+        }
+  </script>
+</head>
+<body class="bg-gray-100">
+  <!-- El menú lateral se insertará automáticamente -->
+  <script src="js/sidebar.js"></script>
+
+  <div class="container mx-auto p-4">
+    <h1 class="text-2xl mb-4">Gestión de Perfil</h1>
+
+    <form id="userForm" class="mb-4 bg-white p-4 rounded shadow">
+      <input type="hidden" id="userId">
+      <div class="mb-2">
+        <label for="name" class="block">Nombres</label>
+        <input type="text" id="name" class="border p-2 w-full">
+      </div>
+      <div class="mb-2">
+        <label for="email" class="block">Correo</label>
+        <input type="text" id="email" class="border p-2 w-full">
+      </div>
+      <div class="mb-2">
+        <label for="password" class="block">Contraseña</label>
+        <input type="password" id="password" class="border p-2 w-full">
+      </div>
+      <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded">Guardar</button>
+    </form>
+  </div>
+
+  <script>
+    const apiUrl = '/api/profile';
+
+    function getProfile() {
+        const id = localStorage.getItem('userId');
+      $.get(`${apiUrl}/${id}`, data => {
+        $('#name').val(data.name);
+        $('#email').val(data.email);
+      });
+    }
+
+    $(document).ready(function() {
+      getProfile();
+
+      $('#userForm').submit(function(e) {
+        e.preventDefault();
+        const id = localStorage.getItem('userId');
+        const userData = {
+          name: $('#name').val(),
+          email: $('#email').val(),
+          password: $('#password').val()
+        };
+
+        if (id) {
+          $.ajax({
+            url: `${apiUrl}/${id}`,
+            method: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify(userData),
+            success: function() {
+              getProfile();
+            }
+          });
+        }
+      });
+    });
+  </script>
+</body>
+</html>
