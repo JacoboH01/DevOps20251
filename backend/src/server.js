@@ -13,8 +13,22 @@ const usersRouter = require('./routes/users');
 const profileRouter = require('./routes/profile');
 const pool = require('./config/database');
 
-// Middleware
-app.use(cors());
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://devops20251-production.up.railway.app'
+];
+
+app.use(cors({
+    origin: function (origin, callback) {
+      // Permitir solicitudes sin origin (como de curl o Postman)
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('No permitido por CORS'));
+      }
+    },
+    credentials: true // si usas cookies o auth headers
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
