@@ -1,23 +1,41 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" integrity="sha256-tq2XQC7duQPnpdenPuR6Z5IE773aRSGjkcutnfUJuTI=" crossorigin="anonymous">
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js">
-    integrity="sha384-oqVuAfXRKap7fdgcCY5uykM6+R9GqQ8K/uxy9rx7HNQlGYl1kPzQho1wx4JwY8wC"
-  </script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha256-wiz7ZSCn/btzhjKDQBms9Hx4sSeUYsDrTLg7roPstac=" crossorigin="anonymous">
-  <script>
-        // Verificar si el usuario está autenticado
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+
+    <!-- Tailwind CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css"
+        integrity="sha256-tq2XQC7duQPnpdenPuR6Z5IE773aRSGjkcutnfUJuTI="
+        crossorigin="anonymous">
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"
+        integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
+        crossorigin="anonymous"></script>
+
+    <!-- Chart.js (versión fija + hash correcto) -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"
+        integrity="sha384-1gYvLZSSDFqAfGv1fSBf7gQKXzhG2S3mOwo5F8qOiR2YOA9u4KoMKkUECpXQljGm"
+        crossorigin="anonymous"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
+        integrity="sha256-wiz7ZSCn/btzhjKDQBms9Hx4sSeUYsDrTLg7roPstac="
+        crossorigin="anonymous">
+
+    <!-- Verificar autenticación -->
+    <script>
         const token = localStorage.getItem('token');
         if (!token) {
             window.location.href = '/';
         }
-  </script>
+    </script>
 </head>
+
+
 <body class="bg-gray-100">
     <!-- El menú lateral se insertará automáticamente -->
     <script src="js/sidebar.js"></script>
@@ -30,7 +48,8 @@
                     Dashboard de Ventas
                 </h1>
                 <div class="flex space-x-4">
-                    <button id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+                    <button id="refreshBtn"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
                         <i class="fas fa-sync-alt mr-2"></i>
                         Actualizar
                     </button>
@@ -49,7 +68,7 @@
 
     <!-- Main Content -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
+
         <!-- Stats Cards -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             <div class="bg-white rounded-lg shadow-sm p-6 border">
@@ -115,7 +134,8 @@
             <div class="bg-white rounded-lg shadow-sm p-6 border">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">Ventas Diarias del Mes</h3>
-                    <button id="exportSalesBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center">
+                    <button id="exportSalesBtn"
+                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center">
                         <i class="fas fa-download mr-1"></i>
                         Excel
                     </button>
@@ -129,7 +149,8 @@
             <div class="bg-white rounded-lg shadow-sm p-6 border">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-lg font-semibold text-gray-900">Productos Más Vendidos</h3>
-                    <button id="exportProductsBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center">
+                    <button id="exportProductsBtn"
+                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center">
                         <i class="fas fa-download mr-1"></i>
                         Excel
                     </button>
@@ -151,9 +172,15 @@
                     <table class="w-full">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendidos</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ingresos</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Producto</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Vendidos</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Ingresos</th>
                             </tr>
                         </thead>
                         <tbody id="topProductsTable" class="bg-white divide-y divide-gray-200">
@@ -167,7 +194,8 @@
             <div class="bg-white rounded-lg shadow-sm border">
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <h3 class="text-lg font-semibold text-gray-900">Mejores Clientes</h3>
-                    <button id="exportCustomersBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center">
+                    <button id="exportCustomersBtn"
+                        class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center">
                         <i class="fas fa-download mr-1"></i>
                         Excel
                     </button>
@@ -176,9 +204,15 @@
                     <table class="w-full">
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Órdenes</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Gastado</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Cliente</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Órdenes</th>
+                                <th
+                                    class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    Total Gastado</th>
                             </tr>
                         </thead>
                         <tbody id="topCustomersTable" class="bg-white divide-y divide-gray-200">
@@ -191,37 +225,37 @@
     </main>
 
     <script>
-        $(document).ready(function() {
+        $(document).ready(function () {
             let salesChart, productsChart;
-            
+
             // Initialize dashboard
             loadDashboardData();
-            
+
             // Event listeners
-            $('#refreshBtn').click(function() {
+            $('#refreshBtn').click(function () {
                 loadDashboardData();
             });
-            
-            $('#exportSalesBtn').click(function() {
+
+            $('#exportSalesBtn').click(function () {
                 exportReport('monthly-sales');
             });
-            
-            $('#exportProductsBtn').click(function() {
+
+            $('#exportProductsBtn').click(function () {
                 exportReport('top-products');
             });
-            
-            $('#exportCustomersBtn').click(function() {
+
+            $('#exportCustomersBtn').click(function () {
                 exportReport('top-customers');
             });
 
             // Load dashboard data
             function loadDashboardData() {
                 showLoading();
-                
+
                 $.ajax({
                     url: '/api/dashboard/stats',
                     method: 'GET',
-                    success: function(response) {
+                    success: function (response) {
                         if (response.success) {
                             updateStatsCards(response.data.monthlyStats);
                             updateSalesChart(response.data.dailySales);
@@ -232,10 +266,10 @@
                             showError('Error al cargar los datos del dashboard');
                         }
                     },
-                    error: function() {
+                    error: function () {
                         showError('Error de conexión al servidor');
                     },
-                    complete: function() {
+                    complete: function () {
                         hideLoading();
                     }
                 });
@@ -252,7 +286,7 @@
             // Update sales chart
             function updateSalesChart(salesData) {
                 const ctx = document.getElementById('salesChart').getContext('2d');
-                
+
                 if (salesChart) {
                     salesChart.destroy();
                 }
@@ -280,7 +314,7 @@
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: function(value) {
+                                    callback: function (value) {
                                         return '$' + value.toLocaleString();
                                     }
                                 }
@@ -298,7 +332,7 @@
             // Update products chart
             function updateProductsChart(productsData) {
                 const ctx = document.getElementById('productsChart').getContext('2d');
-                
+
                 if (productsChart) {
                     productsChart.destroy();
                 }
@@ -399,9 +433,9 @@
             // Export reports
             function exportReport(reportType) {
                 showLoading();
-                
+
                 const url = `/api/dashboard/export/${reportType}`;
-                
+
                 // Create temporary link to download file
                 const link = document.createElement('a');
                 link.href = url;
@@ -409,7 +443,7 @@
                 document.body.appendChild(link);
                 link.click();
                 document.body.removeChild(link);
-                
+
                 setTimeout(hideLoading, 1000);
             }
 
@@ -431,4 +465,5 @@
         });
     </script>
 </body>
+
 </html>
