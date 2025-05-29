@@ -4,17 +4,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const menuItems = {
         admin: [
             { path: '/dashboard', label: 'Dashboard', icon: '📊' },
-            { path: '/tienda', label: 'Ir a la Tienda', icon: '🛒' },
+            // { path: '/tienda', label: 'Ir a la Tienda', icon: '🛒' },
             { path: '/users', label: 'Gestión de Usuarios', icon: '👥' },
             { path: '/products', label: 'Gestión de Productos', icon: '🛍️' },
             { path: '/orders', label: 'Gestión de Pedidos', icon: '📦' },
-            { path: '/reports', label: 'Reportes', icon: '📈' },
-            { path: '/settings', label: 'Configuración', icon: '⚙️' },
+            // { path: '/reports', label: 'Reportes', icon: '📈' },
+            // { path: '/settings', label: 'Configuración', icon: '⚙️' },
             { path: '#logout', label: 'Cerrar Sesión', icon: '🚪' }
         ],
         user: [
-            { path: '/dashboard', label: 'Dashboard', icon: '📊' },
             { path: '/tienda', label: 'Ir a la Tienda', icon: '🛒' },
+            { path: '/likes', label: 'Mis Preferencias', icon: '💖' },
             { path: '/orders', label: 'Mis Pedidos', icon: '📦' },
             { path: '/profile', label: 'Mi Perfil', icon: '👤' },
             { path: '#logout', label: 'Cerrar Sesión', icon: '🚪' }

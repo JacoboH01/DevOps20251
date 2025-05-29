@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gestión de Preferencias</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" integrity="sha256-tq2XQC7duQPnpdenPuR6Z5IE773aRSGjkcutnfUJuTI=" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script>
+        // Verificar si el usuario está autenticado
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+        }
+  </script>
+</head>
+<body class="bg-gray-100">
+  <!-- El menú lateral se insertará automáticamente -->
+  <script src="js/sidebar.js"></script>
+
+  <div class="container mx-auto p-4">
+    <h1 class="text-2xl mb-4">Gestión de Preferencias</h1>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" id="productsGrid">
+            <!-- Los productos se cargarán dinámicamente aquí -->
+    </div>
+  </div>
+
+  <script>
+    function fetchProducts() {
+        // Mostrar el spinner al empezar
+        $('#spinner').removeClass('hidden');
+        const userId = localStorage.getItem('userId');
+        $.get(`/api/likes?userId=${userId}`, function(data) {
+            renderProducts( data );
+        }).fail(function() {
+            console.error('Error al cargar productos.');
+        }).always(function() {
+            // Ocultar el spinner al terminar
+            $('#spinner').addClass('hidden');
+        });
+    }
+
+    function renderProducts( data ) {
+        const grid = $('#productsGrid');
+        grid.empty(); // Limpia el grid antes de volver a pintar
+
+        if (data.length === 0) {
+            // Mostrar un mensaje amigable si no hay productos
+            grid.append(`
+                <div class="col-span-full text-center mt-8">
+                    <h2 class="text-2xl font-bold text-gray-400">No tienes Preferencias</h2>
+                    <p class="text-gray-400 mt-2">Por favor, vuelve más tarde.</p>
+                </div>
+            `);
+            return; // Terminar la función aquí
+        }
+
+        // Si sí hay productos, renderizarlos como siempre
+        data.forEach(product => {
+            grid.append(`
+                <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition-transform duration-300 cursor-pointer product-card" data-product-id="${product.id}">
+                    <div class="relative">
+                        <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-48 object-cover hover:opacity-90 transition-opacity">
+                        
+                        <!-- Botón de "like" (corazón) -->
+                        <button class="absolute top-2 left-2 hover:text-red-400 like-button transition transform duration-300 ${product.liked ? 'text-red-500' : 'text-black'}" data-id="${product.id}">
+                            <i class="fas fa-heart"></i>
+                        </button>
+
+                        <div class="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-sm">
+                            ${product.category.toUpperCase()}
+                        </div>
+                    </div>
+                    <div class="p-4">
+                        <h3 class="text-white font-semibold mb-2">${product.name}</h3>
+                        <p class="text-gray-400 text-sm mb-2">${product.description}</p>
+                        <p class="text-yellow-400 font-bold text-lg">$${product.price}</p>
+                        <div class="flex justify-between items-center">
+                            <button class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 px-4 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 transition-all delete-preference" data-id="${product.id}">
+                                Eliminar Preferencia
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `);
+        });
+
+        // Actualizar contador de productos (opcional si tienes un contador)
+        $('#productCount').text(`${data.length} productos encontrados`);
+    }
+
+    // Evento para agregar al carrito desde la página principal
+    $(document).on('click', '.delete-preference', function(e) {
+        e.stopPropagation(); // Evitar que se abra el modal de detalles
+        const productId = $(this).data('id');
+        const userId = localStorage.getItem('userId');
+        
+        $.ajax({
+            url: `/api/likes`,
+            type: 'DELETE',
+            data: { userId, productId },
+            success: function() {
+                showNotification('Preferencia eliminada correctamente.', 'success');
+                fetchProducts(); // Recargar productos después de eliminar
+            },
+            error: function() {
+                showNotification('Error al eliminar la preferencia.', 'error');
+            }
+        });
+    });
+
+    function showNotification(message, type = 'success') {
+        const bgColor = {
+            success: 'bg-green-600',
+            error: 'bg-red-600',
+            info: 'bg-blue-600'
+        };
+
+        let iconClass;
+        switch (type) {
+        case 'success':
+            iconClass = 'fa-check';
+            break;
+        case 'error':
+            iconClass = 'fa-exclamation-circle';
+            break;
+        default:
+            iconClass = 'fa-info-circle';
+        }
+        const notification = $(`
+            <div class="fixed bottom-4 right-4 ${bgColor[type]} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 opacity-0 flex items-center">
+                <i class="fas ${iconClass} mr-2"></i>
+                ${message}
+            </div>
+        `);
+        
+        $('body').append(notification);
+        notification.animate({ opacity: 1, bottom: '20px' }, 300);
+        
+        setTimeout(() => {
+            notification.animate({ opacity: 0, bottom: '16px' }, 300, function() {
+                notification.remove();
+            });
+        }, 3000);
+    }
+    
+    $(document).ready(function() {
+      fetchProducts();
+    });
+  </script>
+</body>
+</html>
