@@ -11,6 +11,9 @@ const productsRouter = require('./routes/products');
 const authRouter = require('./routes/auth');
 const usersRouter = require('./routes/users');
 const profileRouter = require('./routes/profile');
+const likesRouter = require('./routes/likes');
+const ordersRouter = require('./routes/orders');
+const dashboardRoutes = require('./routes/dashboard');
 const pool = require('./config/database');
 
 const allowedOrigins = [
@@ -40,6 +43,9 @@ app.use('/api/products', productsRouter);
 app.use('/api/auth', authRouter);
 app.use('/api/users', usersRouter);
 app.use('/api/profile', profileRouter);
+app.use('/api/likes', likesRouter);
+app.use('/api/orders', ordersRouter);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Ruta raíz (redirige a index.html automáticamente gracias a express.static)
 app.get('/', (req, res) => {
@@ -64,6 +70,17 @@ app.get('/profile', (req, res) => {
 });
 
 
+app.get('/likes', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/likes.html'));
+});
+
+app.get('/orders', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/orders.html'));
+});
+
+app.get('/dashboard', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+});
 // Rutas de autenticación
 app.post('/api/auth/login', async (req, res) => {
     try {

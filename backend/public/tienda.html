@@ -101,7 +101,7 @@
     <!-- Pie de página -->
     <footer class="bg-gray-800 text-white mt-16">
         <div class="max-w-7xl mx-auto px-4 py-12">
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
                 <!-- Quiénes Somos -->
                 <div class="space-y-4">
                     <h3 class="text-xl font-bold text-yellow-400">PC<span class="text-white">HUB</span></h3>
@@ -276,6 +276,10 @@
     <div id="productDetailModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50">
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-full max-w-4xl bg-gray-800 rounded-lg shadow-xl overflow-hidden">
             <div class="flex justify-between items-center p-6 border-b border-gray-700">
+                <!-- Botón de "like" (corazón) -->
+                <button class="text-2xl top-2 left-2 text-white hover:text-red-400 like-button transition transform duration-300" id="productDetailLike">
+                    <i class="fas fa-heart"></i>
+                </button>
                 <h2 class="text-2xl font-bold text-white" id="productDetailTitle">Cargando título...</h2>
                 <button class="modal-close text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-700">
                     <i class="fas fa-times text-xl"></i>
@@ -334,8 +338,8 @@
             function fetchProducts() {
                 // Mostrar el spinner al empezar
                 $('#spinner').removeClass('hidden');
-
-                $.get('/api/products', function(data) {
+                const userId = localStorage.getItem('userId');
+                $.get(`/api/products?userId=${userId}`, function(data) {
                     products = data;
                     renderProducts();
                 }).fail(function() {
@@ -511,6 +515,12 @@
                         <div class="bg-gray-800 rounded-lg overflow-hidden shadow-lg transform hover:scale-105 transition-transform duration-300 cursor-pointer product-card" data-product-id="${product.id}">
                             <div class="relative">
                                 <img src="${product.imageUrl}" alt="${product.name}" class="w-full h-48 object-cover hover:opacity-90 transition-opacity">
+                                
+                                <!-- Botón de "like" (corazón) -->
+                                <button class="absolute top-2 left-2 hover:text-red-400 like-button transition transform duration-300 ${product.liked ? 'text-red-500' : 'text-black'}" data-id="${product.id}">
+                                    <i class="fas fa-heart"></i>
+                                </button>
+
                                 <div class="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded text-sm">
                                     ${product.category.toUpperCase()}
                                 </div>
@@ -539,6 +549,7 @@
                 if (!product) return;
 
                 // Actualizar contenido del modal
+                $('#productDetailLike').data('id', productId);
                 $('#productDetailTitle').text(product.name);
                 $('#productDetailImage').attr('src', product.imageUrl);
                 $('#productDetailCategory').text(product.category.toUpperCase());
@@ -654,20 +665,20 @@
 
                 if (confirm(orderSummary)) {
                     // Simular proceso de pago
-                    showNotification('Procesando su pago...', 'info');
+                    //showNotification('Procesando su pago...', 'info');
                     
-                    setTimeout(() => {
-                        // Limpiar carrito
-                        cart = [];
-                        localStorage.setItem('cart', JSON.stringify(cart));
-                        updateCartDisplay();
+                    // setTimeout(() => {
+                    //     // Limpiar carrito
+                    //     cart = [];
+                    //     localStorage.setItem('cart', JSON.stringify(cart));
+                    //     updateCartDisplay();
                         
-                        // Cerrar modal del carrito
-                        $('#cartModal').addClass('hidden');
+                    //     // Cerrar modal del carrito
+                    //     $('#cartModal').addClass('hidden');
                         
-                        // Mostrar confirmación
-                        showNotification('¡Compra realizada con éxito!', 'success');
-                    }, 2000);
+                    //     // Mostrar confirmación
+                    //     showNotification('¡Compra realizada con éxito!', 'success');
+                    // }, 2000);
                 }
             });
 
@@ -798,13 +809,18 @@
             });
 
             // Validación del formulario de pago
-            $('#paymentForm').submit(function(e) {
+            $('#paymentForm').submit(async function(e) {
                 e.preventDefault();
                 
                 const cardNumber = $('#cardNumber').val().replace(/\s/g, '');
                 const expiryDate = $('#expiryDate').val();
                 const cvv = $('#cvv').val();
                 const cardName = $('#cardName').val();
+                const total = cart.reduce((sum, item) => {
+                    const product = products.find(p => p.id === item.id);
+                    return sum + (product.price * item.quantity);
+                }, 0);
+                const cartItems = localStorage.getItem ("cart")
 
                 if (cardNumber.length < 16) {
                     showNotification('Número de tarjeta inválido', 'error');
@@ -828,7 +844,31 @@
 
                 // Simular procesamiento de pago
                 showNotification('Procesando pago...', 'info');
+
+                const res = await fetch('/api/orders', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        userId: localStorage.getItem('userId'),
+                        cardNumber: cardNumber,
+                        expiryDate: expiryDate,
+                        cvv: cvv,
+                        cardName: cardName,
+                        total: total,
+                        cartItems: cartItems
+                    })
+                });
                 
+                if (res.ok) {
+                    const data = await res.json();
+                    console.log('Orden creada:', data);
+                } else {
+                    const err = await res.json();
+                    alert(err.error); // mostrará "Total inválido" u otro mensaje
+                }
+
                 setTimeout(() => {
                     // Limpiar carrito
                     cart = [];
@@ -968,6 +1008,48 @@
 
             // Inicializar el carrusel
             initCarousel();
+
+            //funcion para el like de los productos
+            $(document).on('click', '.like-button', function (e) {
+                e.stopPropagation(); // evita que el clic afecte otras acciones como abrir detalles
+                e.preventDefault();
+                const productId = $(this).data('id');
+                const userId = localStorage.getItem('userId');
+                const $btn = $(this);
+                const $icon = $btn.find('i');
+
+                $.ajax({
+                    url: '/api/likes',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ productId: productId, userId: userId }),
+                    success: function (response) {
+                        if (response.liked) {
+                            // Cambiar color y animar
+                            $icon
+                            .removeClass('text-white')
+                            .addClass('text-red-500 scale-125 rotate-12');
+
+                            // Animación suave con Tailwind
+                            $btn.addClass('transition transform duration-300');
+
+                            // Restablecer la escala/rotación tras el efecto
+                            setTimeout(() => {
+                            $icon.removeClass('scale-125 rotate-12');
+                            }, 300);
+                        } else {
+                            // Quitar like
+                            $btn.removeClass('text-red-500').addClass('text-white');
+                            $icon.addClass('scale-90 -rotate-12');
+
+                            setTimeout(() => $icon.removeClass('scale-90 -rotate-12'), 300);
+                        }
+                    },
+                    error: function (err) {
+                        console.error('Error al guardar like', err);
+                    }
+                });
+            });
         });
     </script>
 </body>

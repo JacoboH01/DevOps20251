@@ -3,9 +3,14 @@ const path = require('path');
 
 // Obtener todos los productos
 exports.getAll = async (req, res) => {
+  const { userId } = req.query;
   try {
-    const { rows } = await pool.query(
-      'SELECT * FROM products ORDER BY id'
+    const { rows } = await pool.query(`
+      SELECT p.*, pl."userId" IS NOT NULL AS liked
+      FROM products p
+      LEFT JOIN product_likes pl ON p.id = pl."productId" AND pl."userId" = $1
+      ORDER BY p.id`, 
+      [userId]
     );
     res.json(rows);
   } catch (err) {

@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss/dist/tailwind.min.css" integrity="sha256-tq2XQC7duQPnpdenPuR6Z5IE773aRSGjkcutnfUJuTI=" crossorigin="anonymous">
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha256-wiz7ZSCn/btzhjKDQBms9Hx4sSeUYsDrTLg7roPstac=" crossorigin="anonymous">
+  <script>
+        // Verificar si el usuario está autenticado
+        const token = localStorage.getItem('token');
+        if (!token) {
+            window.location.href = '/';
+        }
+  </script>
+</head>
+<body class="bg-gray-100">
+    <!-- El menú lateral se insertará automáticamente -->
+    <script src="js/sidebar.js"></script>
+    <!-- Header -->
+    <header class="bg-white shadow-sm border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center py-4">
+                <h1 class="text-2xl font-bold text-gray-900">
+                    <i class="fas fa-chart-bar mr-2 text-blue-600"></i>
+                    Dashboard de Ventas
+                </h1>
+                <div class="flex space-x-4">
+                    <button id="refreshBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center">
+                        <i class="fas fa-sync-alt mr-2"></i>
+                        Actualizar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white p-6 rounded-lg flex items-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mr-4"></div>
+            <span class="text-gray-700">Cargando datos...</span>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow-sm p-6 border">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-dollar-sign text-green-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Ingresos del Mes</p>
+                        <p id="totalRevenue" class="text-2xl font-semibold text-gray-900">$0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 border">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-shopping-cart text-blue-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Órdenes Totales</p>
+                        <p id="totalOrders" class="text-2xl font-semibold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 border">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-users text-purple-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Clientes Activos</p>
+                        <p id="activeCustomers" class="text-2xl font-semibold text-gray-900">0</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-sm p-6 border">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <div class="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                            <i class="fas fa-chart-line text-orange-600"></i>
+                        </div>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Promedio por Orden</p>
+                        <p id="avgOrderValue" class="text-2xl font-semibold text-gray-900">$0</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <!-- Sales Chart -->
+            <div class="bg-white rounded-lg shadow-sm p-6 border">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Ventas Diarias del Mes</h3>
+                    <button id="exportSalesBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center">
+                        <i class="fas fa-download mr-1"></i>
+                        Excel
+                    </button>
+                </div>
+                <div class="h-64">
+                    <canvas id="salesChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Top Products Chart -->
+            <div class="bg-white rounded-lg shadow-sm p-6 border">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Productos Más Vendidos</h3>
+                    <button id="exportProductsBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center">
+                        <i class="fas fa-download mr-1"></i>
+                        Excel
+                    </button>
+                </div>
+                <div class="h-64">
+                    <canvas id="productsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tables Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Top Products Table -->
+            <div class="bg-white rounded-lg shadow-sm border">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Top 10 Productos</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Producto</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendidos</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ingresos</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topProductsTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Top Customers Table -->
+            <div class="bg-white rounded-lg shadow-sm border">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold text-gray-900">Mejores Clientes</h3>
+                    <button id="exportCustomersBtn" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm flex items-center">
+                        <i class="fas fa-download mr-1"></i>
+                        Excel
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Cliente</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Órdenes</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Gastado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="topCustomersTable" class="bg-white divide-y divide-gray-200">
+                            <!-- Dynamic content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        $(document).ready(function() {
+            let salesChart, productsChart;
+            
+            // Initialize dashboard
+            loadDashboardData();
+            
+            // Event listeners
+            $('#refreshBtn').click(function() {
+                loadDashboardData();
+            });
+            
+            $('#exportSalesBtn').click(function() {
+                exportReport('monthly-sales');
+            });
+            
+            $('#exportProductsBtn').click(function() {
+                exportReport('top-products');
+            });
+            
+            $('#exportCustomersBtn').click(function() {
+                exportReport('top-customers');
+            });
+
+            // Load dashboard data
+            function loadDashboardData() {
+                showLoading();
+                
+                $.ajax({
+                    url: '/api/dashboard/stats',
+                    method: 'GET',
+                    success: function(response) {
+                        if (response.success) {
+                            updateStatsCards(response.data.monthlyStats);
+                            updateSalesChart(response.data.dailySales);
+                            updateProductsChart(response.data.topProducts);
+                            updateTopProductsTable(response.data.topProducts);
+                            updateTopCustomersTable(response.data.topCustomers);
+                        } else {
+                            showError('Error al cargar los datos del dashboard');
+                        }
+                    },
+                    error: function() {
+                        showError('Error de conexión al servidor');
+                    },
+                    complete: function() {
+                        hideLoading();
+                    }
+                });
+            }
+
+            // Update stats cards
+            function updateStatsCards(stats) {
+                $('#totalRevenue').text('$' + parseFloat(stats.total_revenue || 0).toLocaleString());
+                $('#totalOrders').text(parseInt(stats.total_orders || 0).toLocaleString());
+                $('#activeCustomers').text(parseInt(stats.active_customers || 0).toLocaleString());
+                $('#avgOrderValue').text('$' + parseFloat(stats.avg_order_value || 0).toLocaleString());
+            }
+
+            // Update sales chart
+            function updateSalesChart(salesData) {
+                const ctx = document.getElementById('salesChart').getContext('2d');
+                
+                if (salesChart) {
+                    salesChart.destroy();
+                }
+
+                const labels = salesData.map(item => new Date(item.date).toLocaleDateString());
+                const data = salesData.map(item => parseFloat(item.total_sales));
+
+                salesChart = new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Ventas Diarias',
+                            data: data,
+                            borderColor: 'rgb(59, 130, 246)',
+                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                ticks: {
+                                    callback: function(value) {
+                                        return '$' + value.toLocaleString();
+                                    }
+                                }
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Update products chart
+            function updateProductsChart(productsData) {
+                const ctx = document.getElementById('productsChart').getContext('2d');
+                
+                if (productsChart) {
+                    productsChart.destroy();
+                }
+
+                const top5Products = productsData.slice(0, 5);
+                const labels = top5Products.map(item => item.name.length > 20 ? item.name.substring(0, 20) + '...' : item.name);
+                const data = top5Products.map(item => parseInt(item.total_sold));
+
+                productsChart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Unidades Vendidas',
+                            data: data,
+                            backgroundColor: [
+                                'rgba(34, 197, 94, 0.8)',
+                                'rgba(59, 130, 246, 0.8)',
+                                'rgba(168, 85, 247, 0.8)',
+                                'rgba(249, 115, 22, 0.8)',
+                                'rgba(239, 68, 68, 0.8)'
+                            ],
+                            borderColor: [
+                                'rgb(34, 197, 94)',
+                                'rgb(59, 130, 246)',
+                                'rgb(168, 85, 247)',
+                                'rgb(249, 115, 22)',
+                                'rgb(239, 68, 68)'
+                            ],
+                            borderWidth: 1
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            y: {
+                                beginAtZero: true
+                            }
+                        },
+                        plugins: {
+                            legend: {
+                                display: false
+                            }
+                        }
+                    }
+                });
+            }
+
+            // Update top products table
+            function updateTopProductsTable(products) {
+                const tbody = $('#topProductsTable');
+                tbody.empty();
+
+                products.slice(0, 10).forEach(product => {
+                    const row = `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">${product.name}</div>
+                                <div class="text-sm text-gray-500">${product.category}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ${parseInt(product.total_sold).toLocaleString()}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $${parseFloat(product.revenue).toLocaleString()}
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                });
+            }
+
+            // Update top customers table
+            function updateTopCustomersTable(customers) {
+                const tbody = $('#topCustomersTable');
+                tbody.empty();
+
+                customers.slice(0, 10).forEach(customer => {
+                    const row = `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">${customer.name}</div>
+                                <div class="text-sm text-gray-500">${customer.email}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                ${parseInt(customer.total_orders).toLocaleString()}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                $${parseFloat(customer.total_spent).toLocaleString()}
+                            </td>
+                        </tr>
+                    `;
+                    tbody.append(row);
+                });
+            }
+
+            // Export reports
+            function exportReport(reportType) {
+                showLoading();
+                
+                const url = `/api/dashboard/export/${reportType}`;
+                
+                // Create temporary link to download file
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = '';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                setTimeout(hideLoading, 1000);
+            }
+
+            // Utility functions
+            function showLoading() {
+                $('#loadingOverlay').removeClass('hidden');
+            }
+
+            function hideLoading() {
+                $('#loadingOverlay').addClass('hidden');
+            }
+
+            function showError(message) {
+                alert('Error: ' + message);
+            }
+
+            // Auto-refresh every 5 minutes
+            setInterval(loadDashboardData, 300000);
+        });
+    </script>
+</body>
+</html>
