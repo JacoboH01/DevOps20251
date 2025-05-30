@@ -47,40 +47,25 @@ app.use('/api/likes', likesRouter);
 app.use('/api/orders', ordersRouter);
 app.use('/api/dashboard', dashboardRoutes);
 
-// Ruta raíz (redirige a index.html automáticamente gracias a express.static)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
+// Mapeo de rutas a archivos HTML
+const htmlRoutes = {
+    '/': 'index.html',
+    '/tienda': 'tienda.html',
+    '/users': 'usuarios.html',
+    '/products': 'productos.html',
+    '/profile': 'perfil.html',
+    '/likes': 'likes.html',
+    '/orders': 'orders.html',
+    '/dashboard': 'dashboard.html'
+};
+
+// Configurar rutas HTML
+Object.entries(htmlRoutes).forEach(([route, htmlFile]) => {
+    app.get(route, (req, res) => {
+        res.sendFile(path.join(__dirname, '../public', htmlFile));
+    });
 });
 
-// Ruta /tienda para servir tienda.html
-app.get('/tienda', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/tienda.html'));
-});
-
-app.get('/users', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/usuarios.html'));
-});
-
-app.get('/products', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/productos.html'));
-});
-
-app.get('/profile', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/perfil.html'));
-});
-
-
-app.get('/likes', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/likes.html'));
-});
-
-app.get('/orders', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/orders.html'));
-});
-
-app.get('/dashboard', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/dashboard.html'));
-});
 // Rutas de autenticación
 app.post('/api/auth/login', async (req, res) => {
     try {

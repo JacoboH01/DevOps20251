@@ -166,9 +166,106 @@ exports.getOrderDetails = async (req, res) => {
     }
 };
 
-exports.getAllOrders = async (req, res) => {
+// Funciones utilitarias para manejo de órdenes
+const buildWhereConditions = (userId, status, startDate, endDate) => {
+  let whereConditions = ['o."userId" = $1'];
+  let queryParams = [userId];
+  let paramCount = 1;
+
+  if (status && status !== 'all') {
+    paramCount++;
+    whereConditions.push(`o.status = $${paramCount}`);
+    queryParams.push(status);
+  }
+
+  if (startDate) {
+    paramCount++;
+    whereConditions.push(`o."createdAt" >= $${paramCount}`);
+    queryParams.push(startDate);
+  }
+
+  if (endDate) {
+    paramCount++;
+    whereConditions.push(`o."createdAt" <= $${paramCount}`);
+    queryParams.push(endDate + ' 23:59:59');
+  }
+
+  return {
+    whereClause: whereConditions.join(' AND '),
+    queryParams,
+    paramCount
+  };
+};
+
+const validateSortParams = (sortBy, sortOrder) => {
+  const validSortFields = ['createdAt', 'totalAmount', 'status'];
+  const validSortOrders = ['asc', 'desc'];
+  return {
+    safeSortBy: validSortFields.includes(sortBy) ? sortBy : 'createdAt',
+    safeSortOrder: validSortOrders.includes(sortOrder.toLowerCase()) ? sortOrder.toUpperCase() : 'DESC'
+  };
+};
+
+const buildOrdersQuery = (whereClause, safeSortBy, safeSortOrder, paramCount) => `
+  SELECT 
+    o.id,
+    o.status,
+    o."totalAmount",
+    o."shippingAddress",
+    o."paymentMethod",
+    o.card_last4,
+    o."createdAt",
+    o."updatedAt",
+    COUNT(oi.id) as items_count,
+    COALESCE(
+      JSON_AGG(
+        JSON_BUILD_OBJECT(
+          'productId', oi."productId",
+          'productName', p.name,
+          'productImage', p."imageUrl",
+          'quantity', oi.quantity,
+          'price', oi.price,
+          'category', p.category
+        ) ORDER BY p.name
+      ) FILTER (WHERE oi.id IS NOT NULL), 
+      '[]'::json
+    ) as items
+  FROM orders o
+  LEFT JOIN order_items oi ON o.id = oi."orderId"
+  LEFT JOIN products p ON oi."productId" = p.id
+  WHERE ${whereClause}
+  GROUP BY o.id, o.status, o."totalAmount", o."shippingAddress", 
+           o."paymentMethod", o.card_last4, o."createdAt", o."updatedAt"
+  ORDER BY o."${safeSortBy}" ${safeSortOrder}
+  LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
+`;
+
+const formatOrders = (orders) => {
+  return orders.map(order => ({
+    ...order,
+    totalAmount: parseFloat(order.totalAmount),
+    items: Array.isArray(order.items) ? order.items : [],
+    createdAt: new Date(order.createdAt).toISOString(),
+    updatedAt: new Date(order.updatedAt).toISOString()
+  }));
+};
+
+const buildPaginationData = (page, limit, totalRecords) => {
+  const totalPages = Math.ceil(totalRecords / parseInt(limit));
+  return {
+    currentPage: parseInt(page),
+    totalPages,
+    totalRecords,
+    limit: parseInt(limit),
+    hasNextPage: parseInt(page) < totalPages,
+    hasPrevPage: parseInt(page) > 1
+  };
+};
+
+exports.getAdminOrders = async (req, res) => {
     try {
       const { 
+        userId,
         page = 1, 
         limit = 10, 
         status = '', 
@@ -180,75 +277,12 @@ exports.getAllOrders = async (req, res) => {
 
       const offset = (parseInt(page) - 1) * parseInt(limit);
       
-      // Construir condiciones WHERE dinámicamente
-      let whereConditions = [];
-      let queryParams = [userId];
-      let paramCount = 1;
-
-      if (status && status !== 'all') {
-        paramCount++;
-        whereConditions.push(`o.status = $${paramCount}`);
-        queryParams.push(status);
-      }
-
-      if (startDate) {
-        paramCount++;
-        whereConditions.push(`o."createdAt" >= $${paramCount}`);
-        queryParams.push(startDate);
-      }
-
-      if (endDate) {
-        paramCount++;
-        whereConditions.push(`o."createdAt" <= $${paramCount}`);
-        queryParams.push(endDate + ' 23:59:59');
-      }
-
-      const whereClause = whereConditions.join(' AND ');
+      const { whereClause, queryParams, paramCount } = buildWhereConditions(userId, status, startDate, endDate);
+      const { safeSortBy, safeSortOrder } = validateSortParams(sortBy, sortOrder);
       
-      // Validar campos de ordenamiento
-      const validSortFields = ['createdAt', 'totalAmount', 'status'];
-      const validSortOrders = ['asc', 'desc'];
-      const safeSortBy = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
-      const safeSortOrder = validSortOrders.includes(sortOrder.toLowerCase()) ? sortOrder.toUpperCase() : 'DESC';
-
-      // Query principal para obtener órdenes
-      const ordersQuery = `
-        SELECT 
-          o.id,
-          o.status,
-          o."totalAmount",
-          o."shippingAddress",
-          o."paymentMethod",
-          o.card_last4,
-          o."createdAt",
-          o."updatedAt",
-          COUNT(oi.id) as items_count,
-          COALESCE(
-            JSON_AGG(
-              JSON_BUILD_OBJECT(
-                'productId', oi."productId",
-                'productName', p.name,
-                'productImage', p."imageUrl",
-                'quantity', oi.quantity,
-                'price', oi.price,
-                'category', p.category
-              ) ORDER BY p.name
-            ) FILTER (WHERE oi.id IS NOT NULL), 
-            '[]'::json
-          ) as items
-        FROM orders o
-        LEFT JOIN order_items oi ON o.id = oi."orderId"
-        LEFT JOIN products p ON oi."productId" = p.id
-        WHERE ${whereClause}
-        GROUP BY o.id, o.status, o."totalAmount", o."shippingAddress", 
-                 o."paymentMethod", o.card_last4, o."createdAt", o."updatedAt"
-        ORDER BY o."${safeSortBy}" ${safeSortOrder}
-        LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
-      `;
-
+      const ordersQuery = buildOrdersQuery(whereClause, safeSortBy, safeSortOrder, paramCount);
       queryParams.push(parseInt(limit), offset);
 
-      // Query para contar total de registros
       const countQuery = `
         SELECT COUNT(DISTINCT o.id) as total
         FROM orders o
@@ -257,33 +291,18 @@ exports.getAllOrders = async (req, res) => {
 
       const [ordersResult, countResult] = await Promise.all([
         pool.query(ordersQuery, queryParams),
-        pool.query(countQuery, queryParams.slice(0, -2)) // Remover limit y offset del count
+        pool.query(countQuery, queryParams.slice(0, -2))
       ]);
 
       const totalRecords = parseInt(countResult.rows[0].total);
-      const totalPages = Math.ceil(totalRecords / parseInt(limit));
-
-      // Formatear las órdenes
-      const formattedOrders = ordersResult.rows.map(order => ({
-        ...order,
-        totalAmount: parseFloat(order.totalAmount),
-        items: Array.isArray(order.items) ? order.items : [],
-        createdAt: new Date(order.createdAt).toISOString(),
-        updatedAt: new Date(order.updatedAt).toISOString()
-      }));
+      const formattedOrders = formatOrders(ordersResult.rows);
+      const pagination = buildPaginationData(page, limit, totalRecords);
 
       res.json({
         success: true,
         data: {
           orders: formattedOrders,
-          pagination: {
-            currentPage: parseInt(page),
-            totalPages,
-            totalRecords,
-            limit: parseInt(limit),
-            hasNextPage: parseInt(page) < totalPages,
-            hasPrevPage: parseInt(page) > 1
-          }
+          pagination
         }
       });
 
@@ -311,75 +330,12 @@ exports.getUserOrders = async (req, res) => {
 
       const offset = (parseInt(page) - 1) * parseInt(limit);
       
-      // Construir condiciones WHERE dinámicamente
-      let whereConditions = ['o."userId" = $1'];
-      let queryParams = [userId];
-      let paramCount = 1;
-
-      if (status && status !== 'all') {
-        paramCount++;
-        whereConditions.push(`o.status = $${paramCount}`);
-        queryParams.push(status);
-      }
-
-      if (startDate) {
-        paramCount++;
-        whereConditions.push(`o."createdAt" >= $${paramCount}`);
-        queryParams.push(startDate);
-      }
-
-      if (endDate) {
-        paramCount++;
-        whereConditions.push(`o."createdAt" <= $${paramCount}`);
-        queryParams.push(endDate + ' 23:59:59');
-      }
-
-      const whereClause = whereConditions.join(' AND ');
+      const { whereClause, queryParams, paramCount } = buildWhereConditions(userId, status, startDate, endDate);
+      const { safeSortBy, safeSortOrder } = validateSortParams(sortBy, sortOrder);
       
-      // Validar campos de ordenamiento
-      const validSortFields = ['createdAt', 'totalAmount', 'status'];
-      const validSortOrders = ['asc', 'desc'];
-      const safeSortBy = validSortFields.includes(sortBy) ? sortBy : 'createdAt';
-      const safeSortOrder = validSortOrders.includes(sortOrder.toLowerCase()) ? sortOrder.toUpperCase() : 'DESC';
-
-      // Query principal para obtener órdenes
-      const ordersQuery = `
-        SELECT 
-          o.id,
-          o.status,
-          o."totalAmount",
-          o."shippingAddress",
-          o."paymentMethod",
-          o.card_last4,
-          o."createdAt",
-          o."updatedAt",
-          COUNT(oi.id) as items_count,
-          COALESCE(
-            JSON_AGG(
-              JSON_BUILD_OBJECT(
-                'productId', oi."productId",
-                'productName', p.name,
-                'productImage', p."imageUrl",
-                'quantity', oi.quantity,
-                'price', oi.price,
-                'category', p.category
-              ) ORDER BY p.name
-            ) FILTER (WHERE oi.id IS NOT NULL), 
-            '[]'::json
-          ) as items
-        FROM orders o
-        LEFT JOIN order_items oi ON o.id = oi."orderId"
-        LEFT JOIN products p ON oi."productId" = p.id
-        WHERE ${whereClause}
-        GROUP BY o.id, o.status, o."totalAmount", o."shippingAddress", 
-                 o."paymentMethod", o.card_last4, o."createdAt", o."updatedAt"
-        ORDER BY o."${safeSortBy}" ${safeSortOrder}
-        LIMIT $${paramCount + 1} OFFSET $${paramCount + 2}
-      `;
-
+      const ordersQuery = buildOrdersQuery(whereClause, safeSortBy, safeSortOrder, paramCount);
       queryParams.push(parseInt(limit), offset);
 
-      // Query para contar total de registros
       const countQuery = `
         SELECT COUNT(DISTINCT o.id) as total
         FROM orders o
@@ -388,33 +344,18 @@ exports.getUserOrders = async (req, res) => {
 
       const [ordersResult, countResult] = await Promise.all([
         pool.query(ordersQuery, queryParams),
-        pool.query(countQuery, queryParams.slice(0, -2)) // Remover limit y offset del count
+        pool.query(countQuery, queryParams.slice(0, -2))
       ]);
 
       const totalRecords = parseInt(countResult.rows[0].total);
-      const totalPages = Math.ceil(totalRecords / parseInt(limit));
-
-      // Formatear las órdenes
-      const formattedOrders = ordersResult.rows.map(order => ({
-        ...order,
-        totalAmount: parseFloat(order.totalAmount),
-        items: Array.isArray(order.items) ? order.items : [],
-        createdAt: new Date(order.createdAt).toISOString(),
-        updatedAt: new Date(order.updatedAt).toISOString()
-      }));
+      const formattedOrders = formatOrders(ordersResult.rows);
+      const pagination = buildPaginationData(page, limit, totalRecords);
 
       res.json({
         success: true,
         data: {
           orders: formattedOrders,
-          pagination: {
-            currentPage: parseInt(page),
-            totalPages,
-            totalRecords,
-            limit: parseInt(limit),
-            hasNextPage: parseInt(page) < totalPages,
-            hasPrevPage: parseInt(page) > 1
-          }
+          pagination
         }
       });
 

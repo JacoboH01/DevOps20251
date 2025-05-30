@@ -682,231 +682,77 @@
                 }
             });
 
-            // Función mejorada para mostrar notificaciones
-            function showNotification(message, type = 'success') {
-                const bgColor = {
-                    success: 'bg-green-600',
-                    error: 'bg-red-600',
-                    info: 'bg-blue-600'
-                };
-
-                let iconClass;
-                switch (type) {
-                case 'success':
-                    iconClass = 'fa-check';
-                    break;
-                case 'error':
-                    iconClass = 'fa-exclamation-circle';
-                    break;
-                default:
-                    iconClass = 'fa-info-circle';
+            // Sistema de notificaciones mejorado
+            const NotificationSystem = {
+                types: {
+                    success: { bgColor: 'bg-green-600', icon: 'fa-check' },
+                    error: { bgColor: 'bg-red-600', icon: 'fa-exclamation-circle' },
+                    info: { bgColor: 'bg-blue-600', icon: 'fa-info-circle' }
+                },
+                
+                show(message, type = 'success') {
+                    const { bgColor, icon } = this.types[type];
+                    const notification = $(`
+                        <div class="fixed bottom-4 right-4 ${bgColor} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 opacity-0 flex items-center">
+                            <i class="fas ${icon} mr-2"></i>
+                            ${message}
+                        </div>
+                    `);
+                    
+                    $('body').append(notification);
+                    notification.animate({ opacity: 1, bottom: '20px' }, 300);
+                    
+                    setTimeout(() => {
+                        notification.animate({ opacity: 0, bottom: '16px' }, 300, function() {
+                            notification.remove();
+                        });
+                    }, 3000);
                 }
-                const notification = $(`
-                    <div class="fixed bottom-4 right-4 ${bgColor[type]} text-white px-6 py-3 rounded-lg shadow-lg transform transition-all duration-300 opacity-0 flex items-center">
-                        <i class="fas ${iconClass} mr-2"></i>
-                        ${message}
-                    </div>
-                `);
+            };
+
+            // Sistema de gestión de modales
+            const ModalSystem = {
+                modals: '#searchModal, #cartModal, #paymentModal, #productDetailModal',
                 
-                $('body').append(notification);
-                notification.animate({ opacity: 1, bottom: '20px' }, 300);
+                closeAll() {
+                    $(this.modals).addClass('hidden');
+                },
                 
-                setTimeout(() => {
-                    notification.animate({ opacity: 0, bottom: '16px' }, 300, function() {
-                        notification.remove();
+                init() {
+                    // Cerrar modal al hacer clic en el botón de cierre
+                    $('.modal-close').click(function() {
+                        $(this).closest('.fixed').addClass('hidden');
                     });
-                }, 3000);
+
+                    // Cerrar modal al hacer clic fuera del contenido
+                    $('.fixed').click(function(e) {
+                        if (e.target === this) {
+                            $(this).addClass('hidden');
+                        }
+                    });
+
+                    // Cerrar modal con la tecla ESC
+                    $(document).keydown(function(e) {
+                        if (e.key === 'Escape') {
+                            ModalSystem.closeAll();
+                        }
+                    });
+                }
+            };
+
+            // Inicializar sistemas
+            $(document).ready(function() {
+                ModalSystem.init();
+            });
+
+            // Reemplazar las llamadas existentes
+            function showNotification(message, type = 'success') {
+                NotificationSystem.show(message, type);
             }
 
-            // Función para cerrar todos los modales
             function closeAllModals() {
-                $('#searchModal, #cartModal, #paymentModal, #productDetailModal').addClass('hidden');
+                ModalSystem.closeAll();
             }
-
-            // Cerrar modal al hacer clic en el botón de cierre
-            $('.modal-close').click(function() {
-                $(this).closest('.fixed').addClass('hidden');
-            });
-
-            // Cerrar modal al hacer clic fuera del contenido
-            $('.fixed').click(function(e) {
-                if (e.target === this) {
-                    $(this).addClass('hidden');
-                }
-            });
-
-            // Cerrar modal con la tecla ESC
-            $(document).keydown(function(e) {
-                if (e.key === 'Escape') {
-                    closeAllModals();
-                }
-            });
-
-            // Modificar los eventos existentes para usar las nuevas funciones
-            $('.fa-search').parent().click(function(e) {
-                e.stopPropagation();
-                closeAllModals();
-                $('#searchModal').removeClass('hidden');
-                $('#searchModalInput').focus();
-            });
-
-            // Evento para la búsqueda avanzada
-            $('#searchModalInput').on('input', function() {
-                currentSearch = $(this).val();
-                renderProducts();
-            });
-
-            // Evento para cerrar el modal al presionar Enter
-            $('#searchModalInput').keypress(function(e) {
-                if (e.which === 13) { // 13 es el código de la tecla Enter
-                    $('#searchModal').addClass('hidden');
-                }
-            });
-
-            // Evento para cerrar el modal de búsqueda sin limpiar la búsqueda
-            $('#searchModal .modal-close').click(function() {
-                $('#searchModal').addClass('hidden');
-            });
-
-            // Evento para limpiar la búsqueda (nuevo botón)
-            $('#clearSearch').click(function() {
-                currentSearch = '';
-                $('#searchModalInput').val('');
-                renderProducts();
-            });
-
-            // Modificar el checkout para usar el nuevo sistema
-            $('#checkoutButton').click(function() {
-                if (cart.length === 0) {
-                    showNotification('El carrito está vacío', 'error');
-                    return;
-                }
-
-                const total = cart.reduce((sum, item) => {
-                    const product = products.find(p => p.id === item.id);
-                    return sum + (product.price * item.quantity);
-                }, 0);
-
-                $('#paymentAmount').text(`$${total.toFixed(2)}`);
-                closeAllModals();
-                $('#paymentModal').removeClass('hidden');
-            });
-
-            // Formateo de tarjeta de crédito
-            $('#cardNumber').on('input', function() {
-                let value = $(this).val().replace(/\D/g, '');
-                value = value.replace(/(.{4})/g, '$1 ').trim();
-                $(this).val(value);
-            });
-
-            // Formateo de fecha de expiración
-            $('#expiryDate').on('input', function() {
-                let value = $(this).val().replace(/\D/g, '');
-                if (value.length > 2) {
-                    value = value.substring(0, 2) + '/' + value.substring(2);
-                }
-                $(this).val(value);
-            });
-
-            // Validación del formulario de pago
-            $('#paymentForm').submit(async function(e) {
-                e.preventDefault();
-                
-                const cardNumber = $('#cardNumber').val().replace(/\s/g, '');
-                const expiryDate = $('#expiryDate').val();
-                const cvv = $('#cvv').val();
-                const cardName = $('#cardName').val();
-                const total = cart.reduce((sum, item) => {
-                    const product = products.find(p => p.id === item.id);
-                    return sum + (product.price * item.quantity);
-                }, 0);
-                const cartItems = localStorage.getItem ("cart")
-
-                if (cardNumber.length < 16) {
-                    showNotification('Número de tarjeta inválido', 'error');
-                    return;
-                }
-
-                if (expiryDate.length < 5) {
-                    showNotification('Fecha de expiración inválida', 'error');
-                    return;
-                }
-
-                if (cvv.length < 3) {
-                    showNotification('CVV inválido', 'error');
-                    return;
-                }
-
-                if (cardName.length < 3) {
-                    showNotification('Nombre inválido', 'error');
-                    return;
-                }
-
-                // Simular procesamiento de pago
-                showNotification('Procesando pago...', 'info');
-
-                const res = await fetch('/api/orders', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        userId: localStorage.getItem('userId'),
-                        cardNumber: cardNumber,
-                        expiryDate: expiryDate,
-                        cvv: cvv,
-                        cardName: cardName,
-                        total: total,
-                        cartItems: cartItems
-                    })
-                });
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    console.log('Orden creada:', data);
-                } else {
-                    const err = await res.json();
-                    alert(err.error); // mostrará "Total inválido" u otro mensaje
-                }
-
-                setTimeout(() => {
-                    // Limpiar carrito
-                    cart = [];
-                    localStorage.setItem('cart', JSON.stringify(cart));
-                    updateCartDisplay();
-                    
-                    // Cerrar modal de pago
-                    $('#paymentModal').addClass('hidden');
-                    
-                    // Mostrar confirmación
-                    showNotification('¡Pago realizado con éxito!', 'success');
-                    
-                    // Limpiar formulario
-                    $('#paymentForm')[0].reset();
-                }, 2000);
-            });
-
-            // Evento para agregar al carrito desde el modal de detalle
-            $('#productDetailAddToCart').click(function() {
-                const productId = $(this).data('product-id');
-                const existingItem = cart.find(item => item.id === productId);
-                
-                if (existingItem) {
-                    existingItem.quantity += 1;
-                } else {
-                    cart.push({ id: productId, quantity: 1 });
-                }
-                
-                localStorage.setItem('cart', JSON.stringify(cart));
-                updateCartDisplay();
-                
-                const product = products.find(p => p.id === productId);
-                showNotification(`¡${product.name} agregado al carrito!`);
-            });
-
-            // Inicializar la página
-            fetchProducts();
-            updateCartDisplay();
 
             // Carrusel de productos destacados
             const featuredProducts = [

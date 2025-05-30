@@ -95,6 +95,36 @@ const dashboardController = {
     }
   },
 
+  // Funciones utilitarias para exportación a Excel
+  createExcelWorkbook(worksheetName, columns) {
+    const workbook = new ExcelJS.Workbook();
+    const worksheet = workbook.addWorksheet(worksheetName);
+    
+    // Configurar columnas
+    worksheet.columns = columns;
+    
+    // Estilo para encabezados
+    worksheet.getRow(1).font = { bold: true };
+    worksheet.getRow(1).fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FFE0E0E0' }
+    };
+    
+    return { workbook, worksheet };
+  },
+
+  setupExcelResponse(res, filename) {
+    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+  },
+
+  formatCurrencyColumns(worksheet, columns) {
+    columns.forEach(column => {
+      worksheet.getColumn(column).numFmt = '$#,##0.00';
+    });
+  },
+
   // Exportar reporte de ventas mensuales a Excel
   async exportMonthlySales(req, res) {
     try {
@@ -118,26 +148,14 @@ const dashboardController = {
 
       const result = await pool.query(query, [targetMonth, targetYear]);
 
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Ventas Mensuales');
-
-      // Headers
-      worksheet.columns = [
+      const { workbook, worksheet } = this.createExcelWorkbook('Ventas Mensuales', [
         { header: 'Fecha', key: 'fecha', width: 15 },
         { header: 'Número de Órdenes', key: 'num_ordenes', width: 20 },
         { header: 'Ventas Totales', key: 'ventas_totales', width: 20 },
         { header: 'Promedio por Orden', key: 'promedio_orden', width: 20 }
-      ];
+      ]);
 
-      // Style headers
-      worksheet.getRow(1).font = { bold: true };
-      worksheet.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
-      };
-
-      // Add data
+      // Agregar datos
       result.rows.forEach(row => {
         worksheet.addRow({
           fecha: new Date(row.fecha).toLocaleDateString(),
@@ -147,12 +165,8 @@ const dashboardController = {
         });
       });
 
-      // Format currency columns
-      worksheet.getColumn('ventas_totales').numFmt = '$#,##0.00';
-      worksheet.getColumn('promedio_orden').numFmt = '$#,##0.00';
-
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', `attachment; filename=ventas-${targetMonth}-${targetYear}.xlsx`);
+      this.formatCurrencyColumns(worksheet, ['ventas_totales', 'promedio_orden']);
+      this.setupExcelResponse(res, `ventas-${targetMonth}-${targetYear}.xlsx`);
 
       await workbook.xlsx.write(res);
       res.end();
@@ -184,23 +198,13 @@ const dashboardController = {
 
       const result = await pool.query(query);
 
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Productos Más Vendidos');
-
-      worksheet.columns = [
+      const { workbook, worksheet } = this.createExcelWorkbook('Productos Más Vendidos', [
         { header: 'Producto', key: 'producto', width: 30 },
         { header: 'Categoría', key: 'categoria', width: 20 },
         { header: 'Precio Unitario', key: 'precio_unitario', width: 20 },
         { header: 'Cantidad Vendida', key: 'cantidad_vendida', width: 20 },
         { header: 'Ingresos Totales', key: 'ingresos_totales', width: 20 }
-      ];
-
-      worksheet.getRow(1).font = { bold: true };
-      worksheet.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
-      };
+      ]);
 
       result.rows.forEach(row => {
         worksheet.addRow({
@@ -212,11 +216,8 @@ const dashboardController = {
         });
       });
 
-      worksheet.getColumn('precio_unitario').numFmt = '$#,##0.00';
-      worksheet.getColumn('ingresos_totales').numFmt = '$#,##0.00';
-
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=productos-mas-vendidos.xlsx');
+      this.formatCurrencyColumns(worksheet, ['precio_unitario', 'ingresos_totales']);
+      this.setupExcelResponse(res, 'productos-mas-vendidos.xlsx');
 
       await workbook.xlsx.write(res);
       res.end();
@@ -248,24 +249,14 @@ const dashboardController = {
 
       const result = await pool.query(query);
 
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Mejores Clientes');
-
-      worksheet.columns = [
+      const { workbook, worksheet } = this.createExcelWorkbook('Mejores Clientes', [
         { header: 'Cliente', key: 'cliente', width: 25 },
         { header: 'Email', key: 'email', width: 30 },
         { header: 'Total Órdenes', key: 'total_ordenes', width: 15 },
         { header: 'Total Gastado', key: 'total_gastado', width: 20 },
         { header: 'Promedio por Orden', key: 'promedio_por_orden', width: 20 },
         { header: 'Última Compra', key: 'ultima_compra', width: 20 }
-      ];
-
-      worksheet.getRow(1).font = { bold: true };
-      worksheet.getRow(1).fill = {
-        type: 'pattern',
-        pattern: 'solid',
-        fgColor: { argb: 'FFE0E0E0' }
-      };
+      ]);
 
       result.rows.forEach(row => {
         worksheet.addRow({
@@ -278,11 +269,8 @@ const dashboardController = {
         });
       });
 
-      worksheet.getColumn('total_gastado').numFmt = '$#,##0.00';
-      worksheet.getColumn('promedio_por_orden').numFmt = '$#,##0.00';
-
-      res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-      res.setHeader('Content-Disposition', 'attachment; filename=mejores-clientes.xlsx');
+      this.formatCurrencyColumns(worksheet, ['total_gastado', 'promedio_por_orden']);
+      this.setupExcelResponse(res, 'mejores-clientes.xlsx');
 
       await workbook.xlsx.write(res);
       res.end();
